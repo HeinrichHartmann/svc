@@ -1,0 +1,29 @@
+networks:
+  traefik:
+    name: traefik
+
+services:
+  traefik:
+    image: traefik
+    networks:
+      - traefik
+    ports:
+      - 80:80 # http
+      - 443:443 # https
+      - 8080:8080 # ping?
+      - 8082:8082 # metrics
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.toml:/etc/traefik/traefik.toml
+      - ./conf:/conf
+      - /svc/var/letsencrypt:/svc/var/letsencrypt
+
+  whoami:
+    image: traefik/whoami
+    networks:
+      - traefik
+    labels:
+      - 'traefik.http.routers.whoami.rule=HostRegexp(`whoami.{domain:.*}`)'
+      - 'traefik.http.routers.whoami.entrypoints=https'
+      - 'traefik.http.routers.whoami.tls=true'
+      - 'traefik.enable=true'

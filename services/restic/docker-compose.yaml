@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  restic:
+    image: docker.heinrichhartmann.net/restic
+    env_file: auth.sh.crypt
+    volumes:
+      - ./cmd.sh:/cmd.sh
+      - /share/hhartmann:/share
+      - /share/hhartmann/var/restic:/cache
+    command: bash /cmd.sh

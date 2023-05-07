@@ -1,0 +1,21 @@
+version: "3.9"
+
+networks:
+  default:
+    external: true
+    name: traefik
+
+services:
+  gogs:
+    image: gogs/gogs
+    ports:
+      - 0.0.0.0:2222:2222
+    volumes:
+      - ./app.ini:/data/gogs/conf/app.ini
+      - /share/hhartmann/var/gogs:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gogs.rule=HostRegexp(`gogs.{domain:.*}`)"
+      - "traefik.http.routers.gogs.entrypoints=https"
+      - "traefik.http.routers.gogs.tls=true"
+      - "traefik.http.services.gogs.loadbalancer.server.port=3000"

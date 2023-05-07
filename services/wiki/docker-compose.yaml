@@ -1,0 +1,20 @@
+version: "3.9"
+
+networks:
+  default:
+    external: true
+    name: traefik
+
+services:
+  wiki:
+    image: gollumwiki/gollum:master
+    volumes:
+    - /svc/mnt/wiki:/wiki/.git
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.wiki.rule=HostRegexp(`wiki.{domain:.*}`)"
+    - "traefik.http.routers.wiki.entrypoints=https"
+    - "traefik.http.routers.wiki.tls=true"
+    - "traefik.http.routers.wiki.middlewares=auth@file"
+    - "traefik.http.services.wiki.loadbalancer.server.port=4567"
+    command: --mathjax --h1-title --emoji --bare

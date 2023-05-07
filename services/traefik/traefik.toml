@@ -1,0 +1,53 @@
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = true
+
+[entryPoints]
+  # CAUTION
+  # Entry points need to be forwarded in run.sh as well!
+  [entryPoints.web]
+    address = ":80"
+  [entryPoints.web.http]
+    [entryPoints.web.http.redirections]
+      [entryPoints.web.http.redirections.entryPoint]
+        to = "https"
+        scheme = "https"
+  [entryPoints.https]
+    address = ":443"
+  [entryPoints.metrics]
+    address = ":8082"
+
+[log]
+  format = "common"
+  level = "INFO"
+  # level = "DEBUG"
+
+#[accessLog]
+#  format = "json"
+
+[api]
+  # debug = true
+  # insecure = true
+  # dashboard = false
+
+[ping]
+  entryPoint = "traefik" # :8080
+
+# Enable Docker configuration backend
+[providers.docker]
+# defaultRule = "Host(`{{ normalize .Name }}.heinrichhartmann.net`)"
+  exposedByDefault = false
+
+# TLS needs to be provided as "dynamic" configuration
+[providers.file]
+  directory = "/conf"
+  watch = true
+
+[tracing]
+  [tracing.jaeger]
+    samplingServerURL = "http://jaeger:5778/sampling"
+    localAgentHostPort = "jaeger:6831"
+
+[metrics]
+  [metrics.prometheus]
+    entryPoint = "metrics"

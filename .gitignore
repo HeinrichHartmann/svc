@@ -1,0 +1,8 @@
+*~
+#*
+**/#*
+*.tmp
+/active/
+/var/
+/mnt/
+/services.enabled/

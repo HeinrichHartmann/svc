@@ -1,0 +1,139 @@
+version: "3.9"
+
+networks:
+  default:
+    name: "monitoring"
+  traefik:
+    external: true
+    name: traefik
+
+services:
+  speedtest-exporter:
+    container_name: speedtest-exporter
+    image: miguelndecarvalho/speedtest-exporter
+
+  blackbox-exporter:
+    container_name: blackbox-exporter
+    image: prom/blackbox-exporter
+    volumes:
+      - './blackbox/config:/config'
+
+  # We are running node-exporter directly under systemd as to avoid issues with mount points not showing up
+  # node-exporter:
+  #   container_name: node-exporter
+  #   image: prom/node-exporter
+  #   privileged: true
+  #   ports:
+  #     - '9100:9100'
+  #   volumes:
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /:/rootfs:ro
+  #   command:
+  #     - '--path.procfs=/host/proc'
+  #     - '--path.sysfs=/host/sys'
+  #     - '--collector.filesystem.ignored-mount-points'
+  #     - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+
+  # Disabled because of high constant CPU load
+  # cadvisor:
+  #   container_name: cadvisor
+  #   image: gcr.io/cadvisor/cadvisor:latest
+  #   networks:
+  #     - default
+  #     - traefik
+  #   labels:
+  #     - 'traefik.http.routers.cadvisor.rule=HostRegexp(`cadvisor.{domain:.*}`)'
+  #     - "traefik.http.routers.cadvisor.entrypoints=https"
+  #     - "traefik.http.routers.cadvisor.tls=true"
+  #     - "traefik.enable=true"
+  #     - "traefik.docker.network=traefik"
+  #   volumes:
+  #     - /:/rootfs:ro
+  #     - /var/run:/var/run:rw
+  #     - /sys:/sys:ro
+  #     - /var/lib/docker/:/var/lib/docker:ro
+
+  prometheus:
+    container_name: prometheus
+    image: 'prom/prometheus:v2.25.2'
+    networks:
+      - default
+      - traefik
+    labels:
+      - 'traefik.http.routers.prometheus.rule=HostRegexp(`prometheus.{domain:.*}`)'
+      - 'traefik.http.routers.prometheus.entrypoints=https'
+      - 'traefik.http.routers.prometheus.tls=true'
+      - 'traefik.http.routers.prometheus.middlewares=auth@file'
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=traefik'
+    volumes:
+      - './prometheus/:/etc/prometheus/'
+      - '/share/hhartmann/var/prometheus:/prometheus'
+
+  grafana:
+    image: grafana/grafana
+    networks:
+      - default
+      - traefik
+    labels:
+      - 'traefik.http.routers.grafana.rule=HostRegexp(`grafana.{domain:.*}`)'
+      - traefik.http.routers.grafana.entrypoints=https
+      - traefik.http.routers.grafana.tls=true
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+    volumes:
+      - '/share/hhartmann/var/grafana:/var/lib/grafana'
+      - './grafana/provisioning/:/etc/grafana/provisioning/'
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.37
+    networks:
+      - default
+      - traefik
+    labels:
+      - "traefik.http.routers.jaeger.rule=HostRegexp(`jaeger.{domain:.*}`)"
+      - "traefik.http.routers.jaeger.entrypoints=https"
+      - "traefik.http.routers.jaeger.tls=true"
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.auth@file=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+
+  logs:
+    image: amir20/dozzle:latest
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.logs.rule=HostRegexp(`logs.{domain:.*}`)"
+      - "traefik.http.routers.logs.entrypoints=https"
+      - "traefik.http.routers.logs.tls=true"
+      - "traefik.http.routers.logs.middlewares=auth@file"
+      - "traefik.http.services.logs.loadbalancer.server.port=8080"
+      - "traefik.docker.network=traefik"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  telegraf:
+    image: telegraf:1.25-alpine
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  influxdb:
+     image: influxdb:latest
+     networks:
+       - default
+       - traefik
+     volumes:
+       - ./influx/influx-config.yml:/etc/influxdb2/config.yml
+       - /share/hhartmann/var/influxdb:/var/lib/influxdb2
+     labels:
+       - 'traefik.http.routers.influxdb.rule=HostRegexp(`influxdb.{domain:.*}`)'
+       - 'traefik.http.routers.influxdb.entrypoints=https'
+       - 'traefik.http.routers.influxdb.tls=true'
+       - 'traefik.enable=true'
+       - 'traefik.docker.network=traefik'

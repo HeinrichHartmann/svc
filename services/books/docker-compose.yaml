@@ -1,0 +1,21 @@
+version: "3.9"
+
+networks:
+  default:
+    external: true
+    name: traefik
+
+services:
+  books:
+    image: kizaing/kavita:latest
+    environment:
+      - TZ=Berlin
+    volumes:
+      - /share/hhartmann/garage/Library/:/books/garage:ro
+      - /share/hhartmann/attic/Books/:/books/attic:ro
+      - /share/hhartmann/var/kavita:/kavita/config
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.books.rule=HostRegexp(`books.{domain:.*}`)"
+      - "traefik.http.routers.books.entrypoints=https"
+      - "traefik.http.routers.books.tls=true"

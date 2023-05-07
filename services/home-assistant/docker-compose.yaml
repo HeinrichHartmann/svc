@@ -1,0 +1,20 @@
+version: "3.9"
+
+networks:
+  default:
+    external: true
+    name: traefik
+
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    environment:
+    - TZ=CET
+    volumes:
+    - /share/hhartmann/var/homeassistant:/config
+    labels:
+    - "traefik.enable=true"
+    - "traefik.http.routers.homeassistant.rule=HostRegexp(`homeassistant.{domain:.*}`)"
+    - "traefik.http.routers.homeassistant.entrypoints=https"
+    - "traefik.http.routers.homeassistant.tls=true"
+    - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"

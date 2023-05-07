@@ -1,0 +1,5 @@
+- targets:  # url;humanname;routing;switch
+    - http://www.google.com/;google.com;external;internetbox
+    - https://www.heinrichhartmann.com/;heinrichhartmann.com;external;internetbox
+    - https://eg-levern.de/;EG-Levern;external;internetbox
+    - https://stemwede.freie-demokraten.de/;FDP-stemwede;external;internetbox

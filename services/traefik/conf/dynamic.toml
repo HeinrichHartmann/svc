@@ -1,0 +1,37 @@
+[[tls.certificates]]
+  certFile = "/svc/var/letsencrypt/config/live/heinrichhartmann.net/fullchain.pem" #  /certs/domain.cert
+  keyFile = "/svc/var/letsencrypt/config/live/heinrichhartmann.net/privkey.pem" # /certs/domain.key
+  stores = ["default"]
+
+# Create users with
+#
+#    htpasswd -nb $user $pass
+#
+[http.middlewares]
+  [http.middlewares.auth.basicAuth]
+  users = [
+    "hhartmann:$apr1$l.rACJJ8$ndnv7HMESgiLMmERM4Tjm/",
+    "lhartmann:$apr1$q7Tbhb78$fXCNe8Czi6fLHN/HmjHaJ.",
+  ]
+
+
+[http.routers.traefik]
+  entryPoints = ["https","traefik"]
+  tls = true
+  rule = "HostRegexp(`traefik.{domain:.*}`)"
+  service = "api@internal"
+
+[http.routers.router-1]
+  entryPoints = ["https"]
+  rule = "HostRegexp(`zigbee.{domain:.*}`)"
+  service = "service-1"
+  tls = true
+
+[http.services]
+[http.services.service-1.loadBalancer]
+[[http.services.service-1.loadBalancer.servers]]
+  url = "http://100.97.166.55:8080/"
+[http.services.service-1.loadBalancer.healthCheck]
+  path = "/"
+  interval = "10s"
+  timeout = "3s"

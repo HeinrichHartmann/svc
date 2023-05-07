@@ -1,0 +1,73 @@
+version: "3.9"
+
+networks:
+  default:
+    external: true
+    name: traefik
+
+volumes:
+  invidious_postgresdata:
+
+services:
+  video:
+    container_name: video
+    image: docker.heinrichhartmann.net/pile-video
+    volumes:
+      - /share/hhartmann/garage/Videos/:/usr/src/app/videos
+      - /share/hhartmann/garage/Vcache/:/usr/src/app/cache
+      - /share/hhartmann/garage/Vtmp/:/usr/src/app/tmp
+      - /share/hhartmann/attic/Music/Video:/usr/src/app/mp3
+    labels:
+      - "traefik.http.routers.video.rule=HostRegexp(`video.{domain:.*}`)"
+      - "traefik.http.routers.video.entrypoints=https"
+      - "traefik.http.routers.video.tls=true"
+      - "traefik.enable=true"
+
+  invidious:
+    image: quay.io/invidious/invidious:latest
+    labels:
+      - "traefik.http.routers.invidious.rule=HostRegexp(`youtube.{domain:.*}`)"
+      - "traefik.http.routers.invidious.entrypoints=https"
+      - "traefik.http.routers.invidious.tls=true"
+      - "traefik.http.services.invidious.loadbalancer.server.port=3000"
+      - "traefik.enable=true"
+    environment:
+      INVIDIOUS_CONFIG: |
+        db:
+          dbname: invidious
+          user: kemal
+          password: kemal
+          host: invidious-db
+          port: 5432
+        check_tables: true
+    depends_on:
+      - invidious-db
+
+  invidious-db:
+    image: docker.io/library/postgres:14
+    restart: unless-stopped
+    volumes:
+      - invidious_postgresdata:/var/lib/postgresql/data
+      - /svc/var/invidious/config/sql:/config/sql
+      - /svc/var/invidious/docker/init-invidious-db.sh:/docker-entrypoint-initdb.d/init-invidious-db.sh
+    environment:
+      POSTGRES_DB: invidious
+      POSTGRES_USER: kemal
+      POSTGRES_PASSWORD: kemal
+
+
+  tubesync:
+    image: ghcr.io/meeb/tubesync:latest
+    labels:
+      - "traefik.http.routers.tubesync.rule=HostRegexp(`tubesync.{domain:.*}`)"
+      - "traefik.http.routers.tubesync.entrypoints=https"
+      - "traefik.http.routers.tubesync.tls=true"
+      - "traefik.http.services.tubesync.loadbalancer.server.port=4848"
+      - "traefik.enable=true"
+    volumes:
+      - /svc/var/tubesync:/config
+      - /share/hhartmann/garage/Videos:/downloads
+    environment:
+      - TZ=Europe/London
+      - PUID=1000
+      - PGID=1000

@@ -1,0 +1,22 @@
+version: "3.9"
+
+networks:
+  default:
+    external: true
+    name: traefik
+
+volumes:
+  portainer_data:
+
+services:
+  portainer:
+    image: portainer/portainer-ce
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    labels:
+       - "traefik.enable=true"
+       - "traefik.http.routers.portainer.rule=HostRegexp(`portainer.{domain:.*}`)"
+       - "traefik.http.routers.portainer.entrypoints=https"
+       - "traefik.http.routers.portainer.tls=true"
+       - "traefik.http.services.portainer.loadbalancer.server.port=9000"

@@ -1,0 +1,23 @@
+version: "3.9"
+
+networks:
+  default:
+    external: true
+    name: traefik
+
+services:
+  jupyter:
+    image: docker.heinrichhartmann.net/hh-jupyter
+    volumes:
+      - /:/host/root
+      - /share:/share
+      - /share/hhartmann/var/jupyter:/work
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jupyter.rule=HostRegexp(`jupyter.{domain:.*}`)"
+      - "traefik.http.routers.jupyter.entrypoints=https"
+      - "traefik.http.routers.jupyter.tls=true"
+      - "traefik.http.routers.jupyter.middlewares=auth@file"
+      - "traefik.http.services.jupyter.loadbalancer.server.port=8888"
+    command:
+      start.sh jupyter lab --LabApp.token=''

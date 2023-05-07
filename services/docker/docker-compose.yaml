@@ -1,0 +1,27 @@
+networks:
+  default:
+    name: traefik
+    external: true
+
+services:
+  registry:
+    image: registry:2
+    volumes:
+      - /share/hhartmann/docker-registry:/var/lib/registry
+    labels:
+      - "traefik.http.routers.registry.rule=HostRegexp(`docker.{domain:.*}`)"
+      - "traefik.http.routers.registry.entrypoints=https"
+      - "traefik.http.routers.registry.tls=true"
+      - "traefik.enable=true"
+
+  dockercache: # We can't push to the registry if we use it as cache
+    image: registry:2
+    volumes:
+      - /share/hhartmann/docker-registry:/var/lib/registry
+    environment:
+      REGISTRY_PROXY_REMOTEURL: https://registry-1.docker.io
+    labels:
+      - "traefik.http.routers.dockercache.rule=HostRegexp(`dockercache.{domain:.*}`)"
+      - "traefik.http.routers.dockercache.entrypoints=https"
+      - "traefik.http.routers.dockercache.tls=true"
+      - "traefik.enable=true"
