@@ -61,7 +61,16 @@ See ./crypt/README.md for more details.
 
 ### DNS
 
-Earlier version of this repository had self-hosted DHCP, DNS and PKI (Private
+The configuration now relies on AWS services for [DNS](https://us-east-1.console.aws.amazon.com/route53/v2/hostedzones#ListRecordSets/Z01776191I9YNA03Q8DIE)
+and PKI.
+
+All required AWS configuration is managed using terraform located in `/infra/aws`.
+
+- DNS records for `*.heinrichhartmann.net` point to the "svc" node inside the tailscale network.
+- DNS records for `*.lan.heinrichhartmann.net` point to the "svc" node inside the local netowrk.
+- Known hosts in the tailscale network are exposed under `$host.ts.heinrichhartmann.net` (requires manual updates)
+
+**Learnings.** Earlier version of this repository had self-hosted DHCP, DNS and PKI (Private
 Key Infrastructure for https certificates) included in the config. This has the
 obvious drawback that all clients have to install a self-signed certificate. But
 even once this is done, there are more difficulties caused by various clients
@@ -72,22 +81,38 @@ Android, Safari on iPhone.
 At some point I stopped trying and accepted the fact, that I will be using an
 external service for DNS and PKI.
 
-The configuration now relies on AWS services for [DNS](https://us-east-1.console.aws.amazon.com/route53/v2/hostedzones#ListRecordSets/Z01776191I9YNA03Q8DIE)
-and PKI.
-
-All required AWS configuration is managed using terraform located in `/infra/aws`.
-
-- DNS records for `*.heinrichhartmann.net` point to the "svc" node inside the tailscale network.
-- DNS records for `*.lan.heinrichhartmann.net` point to the "svc" node inside the local netowrk.
-- Known hosts in the tailscale network are exposed under `$host.ts.heinrichhartmann.net` (requires manual updates)
-
 ### Certificates
 
 Certificates are generated via `letsencrypt` and use DNS authentification faciliated by AWS.
 Generated certificates are stored under `/svc/var`.
 
+Reneawal is performed using `make certs` from `/svc`.
+
 ### Ingress
 
+We use Traefik[https://traefik.io/] as ingress proxy.
+
+This tool terminates HTTPS, and routes HTTP requests to the appropriate backend.
+Service discovery is dynamic, and configured using labels associated to docker containers.
+It also allows to configure HTTP Basic Auth for services by adding a label.
+
+Example:
+```yaml
+   labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.books.rule=HostRegexp(`books.{domain:.*}`)"
+      - "traefik.http.routers.books.entrypoints=https"
+      - "traefik.http.routers.books.tls=true"
+```
+
+**Learnings.** Prior iterations used Nginx and HAProxy as for routing requests.
+I found these solutions harder to maintain, as they required to keep the config files in sync, and the syntax (in particular of HAProxy) was hard to manage.
+Traefik offers a good out-of-the box experiences for the standard use-cases.
+Debugging of the docker labels is sometimes a little bit tedious, as there is no linting or syntax checking.
+
+**Open ends.** 
+- I would really like to have OAuth in front of all my services, so I can safely connect and give others the ability to connect without manually managing passwords. Unfortunately the Traefik OAuth plugin is proprietary, and they don't have pricing information on thier page.
+- At Zalando we maintain an in-house solution [Skipper](https://github.com/zalando/skipper) which comes with OAuth support. I want to try this out at some point.
 
 ### Service Configuration
 
