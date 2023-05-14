@@ -1,0 +1,15 @@
+networks:
+  traefik:
+    name: traefik
+    external: true
+
+services:
+  blog:
+    image: docker.heinrichhartmann.net/heinrichhartmann.com:latest
+    networks:
+      - traefik
+    labels:
+      - "traefik.http.routers.blog.rule=HostRegexp(`blog.{domain:.*}`)"
+      - "traefik.http.routers.blog.entrypoints=https"
+      - "traefik.http.routers.blog.tls=true"
+      - "traefik.enable=true"
