@@ -152,10 +152,29 @@ Off-site backup is realized via restic to backblaze for selected datasets.
 
 There are 3 main filesystems on the pool, that differ in backup and replication strategy.
 
-* `/share/shelf`. Working data-set that is intended to be replicated to all working machines. Data in shelf is snapshotted and backed-up. Contents are mainly documents that are work in progress.
-* `/share/attic`. Data in the attic is snapshotted and backed-up. Content includes archived projects, private photo collection, important media.
-* `/share/garage`. Data in garage is snapshotted but not backed-up. Here goes the long-tail of less valuable data I wound not mind loosing.
+* `/share/shelf`. Working data-set that is intended to be replicated to all working machines. 
+  Data in shelf is snapshotted and backed-up. Contents are mainly documents that are work in progress.
+* `/share/attic`. Data in the attic is snapshotted and backed-up.
+  Content includes archived projects, private photo collection, important media.
+* `/share/garage`. Data in garage is snapshotted but not backed-up. 
+  Here goes the long-tail of less valuable data I wound not mind loosing.
 
+The naming of the datasets is reflecting the different storage tiers, that I use for personal stuff:
+
+- Things in the garage are subject to moisture and my easily get stolen when I inadvertently leave the door open.
+- Things in the attic are safe from the elements. Here I keep things of value that I don't want to loose. 
+- Things on the shelf are used for daily operations. Those may get bumped and scratched, and I can easily replace them.
+
+**Open Ends**
+
+* Fix data replication on shelf.
+  - Initially I used Dropbox to sync files in shelf between different machines.
+    As Dropbox removed support for zfs, this was no longer possible.
+    I also lost trust in their prouct alltogether, given the questionable "improvements" to the Desktop clients, and moved away from it entirely.
+    Now that zfs is support again, it may be worth to revisit this decision.
+  - For a while I used Syncthing to replicate data between hosts.
+    This was always a lot more complicated and brittle. Afterseveral episodes of data loss, I gave up on this approach for now.
+    I am sure I am able to get this to work well-enough if I invested more time, but right now I this feature is not a priority.
 
 ## Bootstrapping / Installation
 
