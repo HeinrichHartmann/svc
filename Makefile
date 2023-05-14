@@ -1,10 +1,14 @@
 startup: # called during book
 	echo "Starting up... $$PATH"
-	cd /svc && make start
+	make start
 
 shutdown: # called during shutdown
 	echo "Shutting down..."
 	make stop
+
+cron:
+	echo "Running cron..."
+	if [[ $(date +"%H") = "02" ]]; then make update fi; # run docker updates at 2am
 
 start:
 	# We need to start these first
@@ -28,7 +32,7 @@ stop-all:
 	docker rm $$(docker ps -a -q)
 
 update:
-	for dir in services.enabled/*; do (cd "$$dir" && docker-compose pull); done;
+	for dir in services.enabled/*; do (cd "$$dir" && docker-compose pull; make stop; make start); done;
 
 test:
 	@cd services/traefik && make test

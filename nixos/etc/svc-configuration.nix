@@ -1,14 +1,23 @@
 { config, lib, pkgs, ... }:
 
-{
+let
+  svcpath = [
+    pkgs.coreutils
+    pkgs.bash
+    pkgs.gnumake
+    pkgs.docker-compose
+    pkgs.bindfs
+    pkgs.sudo
+    pkgs.nix
+  ];
+in {
 
   systemd.services.svc-startup = {
     description = "Start /svc services";
     after = [ "network.target" "zfs.target" ];
     wantedBy = [ "multi-user.target" ];
     unitConfig = { ConditionPathExists = "/svc"; };
-    path =
-      [ pkgs.coreutils pkgs.bash pkgs.gnumake pkgs.docker-compose pkgs.bindfs pkgs.sudo ];
+    path = svcpath;
     serviceConfig = {
       Type = "oneshot";
       WorkingDirectory = "/svc";
@@ -19,11 +28,34 @@
   systemd.services.svc-shutdown = {
     description = "Stop /svc services";
     before = [ "shutdown.target" ];
-    path = [ pkgs.coreutils pkgs.bash pkgs.gnumake pkgs.bindfs pkgs.sudo ];
+    unitConfig = { ConditionPathExists = "/svc"; };
+    path = svcpath;
     serviceConfig = {
       Type = "oneshot";
       WorkingDirectory = "/svc";
       ExecStop = "${pkgs.gnumake}/bin/make -C /svc shutdown";
+    };
+  };
+
+  systemd.services.svc-cron = {
+    description = "Run 'make cron' in /svc";
+    after = [ "svc-startup.service" ];
+    wantedBy = [ "multi-user.target" ];
+    unitConfig = { ConditionPathExists = "/svc"; };
+    path = svcpath;
+    serviceConfig = {
+      Type = "oneshot";
+      WorkingDirectory = "/svc";
+      ExecStart = "${pkgs.gnumake}/bin/make -C /svc cron";
+    };
+  };
+
+  systemd.timers.svc-cron = {
+    description = "Run 'make cron' in /svc every hour";
+    timerConfig = {
+      OnCalendar = "*:0/1";
+      Persistent = true;
+      Unit = "svc-cron.service";
     };
   };
 
