@@ -142,6 +142,21 @@ make stop # stop all enabled services
 make test # test status of all services and print results
 ```
 
+### Storage
+
+The main server where this configuration is running is equipped with two 8TB HDD drives.
+Those are configured as a ZFS pool with a RAID 0 configuration, allowing us to compensate for the loss of one of the disks.
+
+We use zfs-autosnapshot to protect against accidental deletion.
+Off-site backup is realized via restic to backblaze for selected datasets.
+
+There are 3 main filesystems on the pool, that differ in backup and replication strategy.
+
+* `/share/shelf`. Working data-set that is intended to be replicated to all working machines. Data in shelf is snapshotted and backed-up. Contents are mainly documents that are work in progress.
+* `/share/attic`. Data in the attic is snapshotted and backed-up. Content includes archived projects, private photo collection, important media.
+* `/share/garage`. Data in garage is snapshotted but not backed-up. Here goes the long-tail of less valuable data I wound not mind loosing.
+
+
 ## Bootstrapping / Installation
 
 1. Make sure internet is working
