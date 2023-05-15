@@ -17,42 +17,25 @@ services:
     image: prom/blackbox-exporter
     volumes:
       - './blackbox/config:/config'
-
-  # We are running node-exporter directly under systemd as to avoid issues with mount points not showing up
-  # node-exporter:
-  #   container_name: node-exporter
-  #   image: prom/node-exporter
-  #   privileged: true
-  #   ports:
-  #     - '9100:9100'
-  #   volumes:
-  #     - /proc:/host/proc:ro
-  #     - /sys:/host/sys:ro
-  #     - /:/rootfs:ro
-  #   command:
-  #     - '--path.procfs=/host/proc'
-  #     - '--path.sysfs=/host/sys'
-  #     - '--collector.filesystem.ignored-mount-points'
-  #     - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    command:
+      - '--config.file=/config/blackbox.yml'
 
   # Disabled because of high constant CPU load
-  # cadvisor:
-  #   container_name: cadvisor
-  #   image: gcr.io/cadvisor/cadvisor:latest
-  #   networks:
-  #     - default
-  #     - traefik
-  #   labels:
-  #     - 'traefik.http.routers.cadvisor.rule=HostRegexp(`cadvisor.{domain:.*}`)'
-  #     - "traefik.http.routers.cadvisor.entrypoints=https"
-  #     - "traefik.http.routers.cadvisor.tls=true"
-  #     - "traefik.enable=true"
-  #     - "traefik.docker.network=traefik"
-  #   volumes:
-  #     - /:/rootfs:ro
-  #     - /var/run:/var/run:rw
-  #     - /sys:/sys:ro
-  #     - /var/lib/docker/:/var/lib/docker:ro
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:latest
+    networks:
+      - default
+      - traefik
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    command:
+      - "--housekeeping_interval=30s"
+      - "--docker_only=true"
+      - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl"
 
   prometheus:
     container_name: prometheus
@@ -137,3 +120,14 @@ services:
        - 'traefik.http.routers.influxdb.tls=true'
        - 'traefik.enable=true'
        - 'traefik.docker.network=traefik'
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: [--config=/etc/otel-collector-config.yaml]
+    networks:
+       - default
+       - traefik
+    volumes:
+      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    depends_on:
+      - jaeger

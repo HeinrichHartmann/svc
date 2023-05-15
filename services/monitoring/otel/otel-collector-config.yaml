@@ -1,0 +1,35 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+  jaeger:
+    protocols:
+      thrift_compact: # port 6831
+      thrift_http: # port 14268
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: debug
+
+  otlp:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+
+extensions:
+  health_check:
+  pprof:
+  zpages:
+
+service:
+  extensions: [health_check, pprof, zpages]
+  pipelines:
+    traces:
+      receivers: [otlp, jaeger]
+      processors: [batch]
+      exporters: [otlp]

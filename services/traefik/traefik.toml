@@ -45,8 +45,7 @@
 
 [tracing]
   [tracing.jaeger]
-    samplingServerURL = "http://jaeger:5778/sampling"
-    localAgentHostPort = "jaeger:6831"
+    localAgentHostPort = "otel-collector:6831"
 
 [metrics]
   [metrics.prometheus]
