@@ -54,20 +54,3 @@ services:
       POSTGRES_DB: invidious
       POSTGRES_USER: kemal
       POSTGRES_PASSWORD: kemal
-
-
-  tubesync:
-    image: ghcr.io/meeb/tubesync:latest
-    labels:
-      - "traefik.http.routers.tubesync.rule=HostRegexp(`tubesync.{domain:.*}`)"
-      - "traefik.http.routers.tubesync.entrypoints=https"
-      - "traefik.http.routers.tubesync.tls=true"
-      - "traefik.http.services.tubesync.loadbalancer.server.port=4848"
-      - "traefik.enable=true"
-    volumes:
-      - /svc/var/tubesync:/config
-      - /share/hhartmann/garage/Videos:/downloads
-    environment:
-      - TZ=Europe/London
-      - PUID=1000
-      - PGID=1000
