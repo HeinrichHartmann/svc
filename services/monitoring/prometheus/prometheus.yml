@@ -42,7 +42,7 @@ scrape_configs:
     scrape_interval: 15s
     metrics_path: /probe
     params:
-      module: [http_2xx]  # Look for a HTTP 200 response.
+      module: [svc_http]
     file_sd_configs:
       - files:
         - pinghosts.yaml

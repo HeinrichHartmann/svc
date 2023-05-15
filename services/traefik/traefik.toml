@@ -26,8 +26,8 @@
 #  format = "json"
 
 [api]
-  # debug = true
-  # insecure = true
+  debug = true
+  insecure = true
   # dashboard = false
 
 [ping]

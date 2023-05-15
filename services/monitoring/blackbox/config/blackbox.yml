@@ -1,4 +1,9 @@
 modules:
+  svc_http:
+    prober: http
+    http:
+      preferred_ip_protocol: "ip4"
+      valid_status_codes: [200, 401, 403] # Treat unauthorized requests as success
   http_2xx:
     prober: http
     http:

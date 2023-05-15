@@ -3,3 +3,31 @@
     - https://www.heinrichhartmann.com/;heinrichhartmann.com;external;internetbox
     - https://eg-levern.de/;EG-Levern;external;internetbox
     - https://stemwede.freie-demokraten.de/;FDP-stemwede;external;internetbox
+    # SVC START
+    - https://amp.heinrichhartmann.net;amp;external;internetbox
+    - https://blog.heinrichhartmann.net;blog;external;internetbox
+    - https://books.heinrichhartmann.net;books;external;internetbox
+    - https://cadvisor.heinrichhartmann.net;cadvisor;external;internetbox
+    - https://docker.heinrichhartmann.net;docker;external;internetbox
+    - https://dockercache.heinrichhartmann.net;dockercache;external;internetbox
+    - https://gogs.heinrichhartmann.net;gogs;external;internetbox
+    - https://grafana.heinrichhartmann.net;grafana;external;internetbox
+    - https://homeassistant.heinrichhartmann.net;homeassistant;external;internetbox
+    - https://influxdb.heinrichhartmann.net;influxdb;external;internetbox
+    - https://jaeger.heinrichhartmann.net;jaeger;external;internetbox
+    - https://jupyter.heinrichhartmann.net;jupyter;external;internetbox
+    - https://logs.heinrichhartmann.net;logs;external;internetbox
+    - https://mstream.heinrichhartmann.net;mstream;external;internetbox
+    - https://music.heinrichhartmann.net;music;external;internetbox
+    - https://pile.heinrichhartmann.net;pile;external;internetbox
+    - https://portainer.heinrichhartmann.net;portainer;external;internetbox
+    - https://prism.heinrichhartmann.net;prism;external;internetbox
+    - https://prometheus.heinrichhartmann.net;prometheus;external;internetbox
+    - https://traefik.heinrichhartmann.net;traefik;external;internetbox
+    - https://tubesync.heinrichhartmann.net;tubesync;external;internetbox
+    - https://video.heinrichhartmann.net;video;external;internetbox
+    - https://whoami.heinrichhartmann.net;whoami;external;internetbox
+    - https://wiki.heinrichhartmann.net;wiki;external;internetbox
+    - https://www.heinrichhartmann.net;www;external;internetbox
+    - https://youtube.heinrichhartmann.net;youtube;external;internetbox
+    - https://zigbee.heinrichhartmann.net;zigbee;external;internetbox
