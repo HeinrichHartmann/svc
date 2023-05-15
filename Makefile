@@ -8,7 +8,7 @@ shutdown: # called during shutdown
 
 cron:
 	echo "Running cron..."
-	if [[ $(date +"%H") = "02" ]]; then make update fi; # run docker updates at 2am
+	if [[ $$(date +"%H") = "02" ]]; then make update; fi # run docker updates at 2am
 
 start:
 	# We need to start these first
