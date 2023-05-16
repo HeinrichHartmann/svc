@@ -6,3 +6,4 @@
 /var/
 /mnt/
 /services.enabled/
+/infrastructure/aws/*.backup
