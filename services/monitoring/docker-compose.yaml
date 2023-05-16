@@ -6,6 +6,13 @@ networks:
   traefik:
     external: true
     name: traefik
+  hostbridge:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.3.0/24
+          gateway: 192.168.3.1
 
 services:
   speedtest-exporter:
@@ -122,12 +129,37 @@ services:
        - 'traefik.docker.network=traefik'
 
   otel-collector:
+    container_name: otel-collector
     image: otel/opentelemetry-collector-contrib:latest
     command: [--config=/etc/otel-collector-config.yaml]
     networks:
-       - default
-       - traefik
+      default:
+      traefik:
+      hostbridge:
+        ipv4_address: 192.168.3.3
     volumes:
       - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ./otel:/otel
     depends_on:
       - jaeger
+
+  loki:
+    image: grafana/loki:2.8.0
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      default:
+      traefik:
+      hostbridge:
+        ipv4_address: 192.168.3.4
+    volumes:
+      - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+
+  logtest:
+    image: ubuntu
+    command: sh -c "while true; do echo Hi Loki \$(date); sleep 10; done"
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: '192.168.3.3:8006'
+        fluentd-async-connect: 'true'
+        tag: "docker.{{.Name}}"

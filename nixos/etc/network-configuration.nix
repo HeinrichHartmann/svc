@@ -12,7 +12,7 @@
         prefixLength = 24;
       }
       {
-        address = "192.168.2.13";
+        address = "192.168.2.13"; # samba
         prefixLength = 24;
       }
     ];
