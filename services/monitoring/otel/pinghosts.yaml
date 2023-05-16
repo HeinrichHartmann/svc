@@ -1,0 +1,31 @@
+- targets:  # url;humanname;routing;switch
+    - http://www.google.com/;google.com;external;internetbox
+    - https://www.heinrichhartmann.com/;heinrichhartmann.com;external;internetbox
+    - https://eg-levern.de/;EG-Levern;external;internetbox
+    - https://stemwede.freie-demokraten.de/;FDP-stemwede;external;internetbox
+    # SVC START
+    - https://amp.heinrichhartmann.net;amp;internal;internetbox
+    - https://blog.heinrichhartmann.net;blog;internal;internetbox
+    - https://books.heinrichhartmann.net;books;internal;internetbox
+    - https://docker.heinrichhartmann.net;docker;internal;internetbox
+    - https://dockercache.heinrichhartmann.net;dockercache;internal;internetbox
+    - https://gogs.heinrichhartmann.net;gogs;internal;internetbox
+    - https://grafana.heinrichhartmann.net;grafana;internal;internetbox
+    - https://homeassistant.heinrichhartmann.net;homeassistant;internal;internetbox
+    - https://influxdb.heinrichhartmann.net;influxdb;internal;internetbox
+    - https://jaeger.heinrichhartmann.net;jaeger;internal;internetbox
+    - https://jupyter.heinrichhartmann.net;jupyter;internal;internetbox
+    - https://logs.heinrichhartmann.net;logs;internal;internetbox
+    - https://mstream.heinrichhartmann.net;mstream;internal;internetbox
+    - https://music.heinrichhartmann.net;music;internal;internetbox
+    - https://pile.heinrichhartmann.net;pile;internal;internetbox
+    - https://portainer.heinrichhartmann.net;portainer;internal;internetbox
+    - https://prism.heinrichhartmann.net;prism;internal;internetbox
+    - https://prometheus.heinrichhartmann.net;prometheus;internal;internetbox
+    - https://traefik.heinrichhartmann.net;traefik;internal;internetbox
+    - https://video.heinrichhartmann.net;video;internal;internetbox
+    - https://whoami.heinrichhartmann.net;whoami;internal;internetbox
+    - https://wiki.heinrichhartmann.net;wiki;internal;internetbox
+    - https://www.heinrichhartmann.net;www;internal;internetbox
+    - https://youtube.heinrichhartmann.net;youtube;internal;internetbox
+    - https://zigbee.heinrichhartmann.net;zigbee;internal;internetbox
