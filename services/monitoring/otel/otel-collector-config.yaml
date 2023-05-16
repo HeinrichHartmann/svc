@@ -1,3 +1,12 @@
+extensions:
+  health_check:
+  pprof:
+  zpages:
+  basicauth/otlp:
+    client_auth:
+      username: 447801
+      password: "eyJrIjoiZmE4YjAwMTY1NmQzMThjZjUzMDQ0ZjlmZWE4MWMzODE1OTdmMzQ0MyIsIm4iOiJUZXN0MiIsImlkIjo3MjAzODN9"
+
 receivers:
   otlp:
     protocols:
@@ -25,6 +34,15 @@ extensions:
   health_check:
   pprof:
   zpages:
+  otlphttp/grafana:
+    auth:
+      authenticator: basicauth/otlp
+    endpoint: "https://otlp-gateway-prod-eu-west-0.grafana.net/otlp"
+
+  otlp/ls:
+     endpoint: ingest.lightstep.com:443
+     headers:
+       "lightstep-access-token": "tfX9hcL3fUVa7LUBg1EBJvXl7pnjltziIKrCYKU4xLtQLNo5d6O02EkwuGflX0hj/joy3mPk0kgWghqisOmI5lvueSnYB/OgkDsI6Osw"
 
 service:
   extensions: [health_check, pprof, zpages]
