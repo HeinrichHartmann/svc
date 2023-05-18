@@ -1,8 +1,2 @@
-start:
-	docker-compose up -d
-
-stop:
-	docker-compose down
-
-test:
-	source /svc/lib/include.sh && check_url video.heinrichhartmann.net
+URL=video.heinrichhartmann.net
+include /svc/lib/include.mk

@@ -1,12 +1,9 @@
+URL=
+include /svc/lib/include.mk
+
 build:
 	docker build --tag docker.heinrichhartmann.net/restic .
 	docker push docker.heinrichhartmann.net/restic
-
-start:
-	docker-compose up -d
-
-stop:
-	docker-compose down
 
 # stats:
 # 	docker run -v $$(pwd):/restic -it docker.heinrichhartmann.net/restic \

@@ -1,3 +1,6 @@
+URL=
+include /svc/lib/include.mk
+
 start:
 	docker-compose -f docker-compose.yaml.crypt up -d
 

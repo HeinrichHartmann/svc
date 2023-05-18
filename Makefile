@@ -15,29 +15,30 @@ start:
 	cd services/traefik && make start
 	cd services/docker && make start
 	# Loop through all active services and start them
-	for dir in services.enabled/*; do (cd "$$dir" && make start); done;
+	for dir in services.enabled/*; do (cd "$$dir" && make start) & done; wait
 
 stop:
-	for dir in services.enabled/*; do (cd "$$dir" && make stop); done;
+	for dir in services.enabled/*; do (cd "$$dir" && make stop) & done; wait
 	cd services/docker && make stop
 	cd services/traefik && make stop
+
+restart: stop start
 
 umount:
 	# lazy unmount of all nested mounts under /svc/mnt
 	findmnt -r -o TARGET | grep '^/svc/mnt' | tac | xargs -n 1 sudo umount -l
-
 
 stop-all:
 	docker stop $$(docker ps -a -q)
 	docker rm $$(docker ps -a -q)
 
 update:
-	for dir in services.enabled/*; do (cd "$$dir" && docker-compose pull; make stop; make start); done;
+	for dir in services.enabled/*; do (cd "$$dir" && docker-compose pull; make restart) & done; wait
 
 test:
 	@cd services/traefik && make test
 	@cd services/docker && make test
-	@for dir in services.enabled/*; do (cd "$$dir" && make test); done
+	@for dir in services.enabled/*; do (cd "$$dir" && make --silent --no-print-directory test); done
 
 test-all:
 	@for dir in services/*; do (cd "$$dir" && make test); done

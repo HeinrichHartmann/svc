@@ -1,14 +1,5 @@
-start:
-	docker-compose up -d
-
-stop:
-	docker-compose down
-
-test:
-	@source /svc/lib/include.sh && check_url grafana.heinrichhartmann.net
-	@source /svc/lib/include.sh && check_url prometheus.heinrichhartmann.net
-	@source /svc/lib/include.sh && check_url jaeger.heinrichhartmann.net
-	@source /svc/lib/include.sh && check_url influxdb.heinrichhartmann.net
+URL=grafana.heinrichhartmann.net prometheus.heinrichhartmann.net jaeger.heinrichhartmann.net influxdb.heinrichhartmann.net
+include /svc/lib/include.mk
 
 update-targets:
 	sed -i '/SVC START/q' ./prometheus/pinghosts.yaml

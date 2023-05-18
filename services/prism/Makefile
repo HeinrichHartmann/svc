@@ -1,4 +1,7 @@
-start:
+URL=prism.heinrichhartmann.net
+include /svc/lib/include.mk
+
+mount:
 	mkdir -p /svc/mnt/prism/pictures
 	sudo bindfs -u $$(id -u) -operms=a-w /share/hhartmann/garage/Pictures/Prism/ \
 	  /svc/mnt/prism/pictures
@@ -15,10 +18,7 @@ start:
 	sudo bindfs -u $$(id -u) --create-for-user=100 --create-for-group=101 /share/hhartmann/garage/SD-Staging/ \
 	  /svc/mnt/prism/import/sd-staging
 
-	docker-compose up -d
-
-stop:
-	docker-compose down
+umount:
 	-sudo umount /svc/mnt/prism/pictures/attic
 	-sudo umount /svc/mnt/prism/pictures
 	-sudo umount /svc/mnt/prism/import/*
