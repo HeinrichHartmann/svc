@@ -2,6 +2,7 @@ version: "3.9"
 
 networks:
   default:
+    external: true
     name: "monitoring"
   traefik:
     external: true
@@ -131,15 +132,17 @@ services:
   otel-collector:
     container_name: otel-collector
     image: otel/opentelemetry-collector-contrib:latest
-    command: [--config=/etc/otel-collector-config.yaml]
+    command: [--config=/otel/otel-collector-config.yaml]
+    env_file:
+      - ./otel/otel-collector.env.crypt
     networks:
       default:
       traefik:
       hostbridge:
         ipv4_address: 192.168.3.3
     volumes:
-      - ./otel/otel-collector-config.yaml:/etc/otel-collector-config.yaml
       - ./otel:/otel
+      - /svc/var/otel:/var/otel
     depends_on:
       - jaeger
 
@@ -153,13 +156,3 @@ services:
         ipv4_address: 192.168.3.4
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
-
-  logtest:
-    image: ubuntu
-    command: sh -c "while true; do echo Hi Loki \$(date); sleep 10; done"
-    logging:
-      driver: fluentd
-      options:
-        fluentd-address: '192.168.3.3:8006'
-        fluentd-async-connect: 'true'
-        tag: "docker.{{.Name}}"

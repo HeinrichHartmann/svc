@@ -1,10 +1,12 @@
 networks:
   traefik:
+    external: true
     name: traefik
 
 services:
   traefik:
     image: traefik:latest
+    container_name: traefik
     networks:
       - traefik
     ports:
