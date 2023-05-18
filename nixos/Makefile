@@ -5,7 +5,7 @@ help:
 
 install-config:
 	sudo install -d -m 755 /etc/nixos/
-	sudo install -t /etc/nixos/ -m 644 etc/*.nix
+	sudo install -t /etc/nixos/ -m 644 etc/*
 
 hoist-config:
 	sudo cp -r /etc/nixos/*.nix etc/

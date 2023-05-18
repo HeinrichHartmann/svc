@@ -69,13 +69,11 @@ in {
     };
   };
 
-  systemd.services.promtail = {
-    description = "Promtail service for Loki";
+  systemd.services.fluentbit = {
+    description = "Fluentbit log exporter";
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
-      ExecStart = ''
-        ${pkgs.grafana-loki}/bin/promtail --config.file /svc/nixos/conf/promtail.yaml
-      '';
+      ExecStart = "${pkgs.fluent-bit}/bin/fluent-bit -c ${./fluentbit.conf}";
     };
   };
 
