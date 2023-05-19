@@ -8,13 +8,13 @@ do
     cmd=$1
     shift
     case $cmd in
-        "list-available")
-            (cd ./services; ls -1);
-            break
-            ;;
         "list" | "list-active" | "ls")
             mkdir -p services.enabled
             (cd ./services.enabled; ls -1);
+            break
+            ;;
+        "list-available")
+            (cd ./services; ls -1);
             break
             ;;
         "enable")
@@ -31,6 +31,13 @@ do
         "disable")
             set -x # echo commands
             rm "services.enabled/$1"
+            break
+            ;;
+        "new")
+            set -x # echo commands
+            cd ./services
+            cp -R ./_template "$1"
+            sed -i "s/%HOST%/$1/g" "$1/"*
             break
             ;;
         *)
