@@ -27,9 +27,9 @@ services:
     container_name: blackbox-exporter
     image: prom/blackbox-exporter
     volumes:
-      - './blackbox/config:/config'
+      - './blackbox/blackbox.yml:/blackbox/blackbox.yml'
     command:
-      - '--config.file=/config/blackbox.yml'
+      - '--config.file=/blackbox/blackbox.yml'
 
   cadvisor:
     container_name: cadvisor
@@ -132,3 +132,4 @@ services:
     volumes:
       - '/share/hhartmann/var/grafana:/var/lib/grafana'
       - './grafana/provisioning/:/etc/grafana/provisioning/'
+      - './grafana/grafana.ini:/etc/grafana/grafana.ini'

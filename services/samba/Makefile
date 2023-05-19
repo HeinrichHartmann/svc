@@ -2,10 +2,10 @@ URL=
 include /svc/lib/include.mk
 
 start:
-	docker compose -f docker-compose.yaml.crypt up -d
+	docker compose --ansi never -f docker-compose.yaml.crypt up -d
 
 stop:
-	docker compose -f docker-compose.yaml.crypt down
+	docker compose --ansi nerver -f docker-compose.yaml.crypt down
 
 test:
 	@nix-shell -p samba --command 'smbclient -L smb.lan.heinrichhartmann.net -U guest -N -m SMB3 | grep all > /dev/null && echo OK smb.lan.heinrichhartmann.net || echo FAIL smb.lan.heinrichhartmann.net'

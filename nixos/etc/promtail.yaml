@@ -1,18 +1,19 @@
 server:
-  http_listen_port: 28183
-  grpc_listen_port: 0
+  http_listen_port: 9080
+
 
 positions:
-  filename: /tmp/positions.yaml
+  filename: /svc/var/promtail/positions.yaml
 
 clients:
-  - url: http://loki:3100/loki/api/v1/push
+  - url: http://192.168.3.3:3100/loki/api/v1/push
 
 scrape_configs:
   - job_name: journal
     journal:
       max_age: 12h
       labels:
+        tool: promtail
         job: systemd-journal
         host: pve
     relabel_configs:

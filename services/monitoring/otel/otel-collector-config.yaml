@@ -28,6 +28,7 @@ receivers:
   fluentforward/systemd:
     endpoint: 0.0.0.0:8007
 
+  # used by promtail
   loki:
     protocols:
       http:

@@ -30,6 +30,5 @@ services:
       - "traefik.http.routers.logs.tls=true"
       - "traefik.http.routers.logs.middlewares=auth@file"
       - "traefik.http.services.logs.loadbalancer.server.port=8080"
-      - "traefik.docker.network=traefik"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

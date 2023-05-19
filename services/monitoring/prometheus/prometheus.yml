@@ -48,15 +48,15 @@ scrape_configs:
         - pinghosts.yaml
     relabel_configs:
       - source_labels: [__address__]
-        regex: '(.*);(.*);(.*);(.*)'  #first is the url, thus unique for instance
+        regex: '(.*);(.*);(.*)'  #first is the url, thus unique for instance
         target_label: instance
         replacement: $1
       - source_labels: [__address__]
-        regex: '(.*);(.*);(.*);(.*)'  #second is humanname to use in charts
+        regex: '(.*);(.*);(.*)'  #second is humanname to use in charts
         target_label: humanname
         replacement: $2
       - source_labels: [__address__]
-        regex: '(.*);(.*);(.*);(.*)'  #third state whether this is testing external or internal network
+        regex: '(.*);(.*);(.*)'  #third state whether this is testing external or internal network
         target_label: routing
         replacement: $3
       - source_labels: [instance]
@@ -64,18 +64,18 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter:9115  # The blackbox exporter's real hostname:port.
 
-  - job_name: "blackbox-tcp"
-    scrape_interval: 15s
-    metrics_path: /probe
-    params:
-      module: [tcp_connect]
-      target: ['samba.heinrichhartmann.net:445']
-    static_configs:
-      - targets: ['blackbox-exporter:9115']
-        labels:
-          humanname: "samba"
-          routing: "internal"
-          instance: "samba.heinrichhartmann.net:445"
+  # - job_name: "blackbox-tcp"
+  #   scrape_interval: 15s
+  #   metrics_path: /probe
+  #   params:
+  #     module: [tcp_connect]
+  #     target: ['samba.heinrichhartmann.net:445']
+  #   static_configs:
+  #     - targets : ['blackbox-exporter:9115']
+  #       labels:
+  #         humanname: "samba"
+  #         routing: "internal"
+  #         instance: "samba.heinrichhartmann.net:445"
 
   - job_name: cadvisor
     static_configs:

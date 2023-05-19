@@ -1,4 +1,8 @@
-start: mount
+DELAY ?= 0
+
+start:
+	sleep $(DELAY)
+	$(MAKE) mount
 	docker compose --ansi never up -d
 
 stop:
@@ -7,7 +11,7 @@ stop:
 
 restart: stop start
 	# kick traefik
-	docker --ansi never restart traefik
+	docker restart traefik
 
 logs:
 	docker compose logs -f

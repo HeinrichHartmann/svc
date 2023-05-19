@@ -1,4 +1,5 @@
 URL=prism.heinrichhartmann.net
+DELAY=60
 include /svc/lib/include.mk
 
 mount:
