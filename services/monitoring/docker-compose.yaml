@@ -97,6 +97,7 @@ services:
         ipv4_address: 192.168.3.4
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+      - /svc/var/loki:/var/loki
 
   jaeger:
     image: jaegertracing/all-in-one:1.37
