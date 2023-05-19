@@ -1,14 +1,20 @@
 startup: # called during book
-	echo "Starting up... $$PATH"
+	echo "Starting up..."
 	make start
 
 shutdown: # called during shutdown
 	echo "Shutting down..."
 	make stop
 
-cron:
+cron: # this is called every hour
 	echo "Running cron..."
-	if [[ $$(date +"%H") = "02" ]]; then make update; fi # run docker updates at 2am
+	# run docker updates at 2am
+	if [[ $$(date +"%H") = "02" ]]; then make update; fi
+	# run certbot on mondays at 2am
+	if [[ $$(date +"%H") = "02" ]] &&  [[ $$(date +"%u") = "1" ]]; then make certs; fi
+	# run cron target for in enabled services
+	find -L ./services.enabled -type f -name "Makefile" \
+	  -exec sh -c 'if grep -q "cron:" "{}"; then echo "Running cron in {}"; (cd $$(dirname "{}") && make cron); fi' \;
 
 start:
 	# We need to start these first
@@ -49,7 +55,7 @@ prune:
 	docker image prune -a -f # delete unused images
 
 certs:
-	cd ./infrastructure/letsencrypt; make certs
+	cd ./infrastructure/letsencrypt; nix develop --command make certs
 
 .PHONY: install-deps
 DEPS = gnupg \

@@ -7,5 +7,4 @@ mount:
 	-sudo bindfs --create-for-user=100 --create-for-group=101 /share/hhartmann/attic/Stack/ /svc/mnt/pile/stack
 
 umount:
-	docker-compose down
 	sudo umount /svc/mnt/pile/*

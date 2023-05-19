@@ -5,10 +5,11 @@ let
     pkgs.coreutils
     pkgs.bash
     pkgs.gnumake
-    pkgs.docker-compose
+    pkgs.docker
     pkgs.bindfs
     pkgs.sudo
     pkgs.nix
+    pkgs.git
   ];
 in {
 
