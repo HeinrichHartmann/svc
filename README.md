@@ -1,8 +1,10 @@
 # SVC - Local Service Configurations
 
 This repository contains the configuration for several services I run at home.
-This is not intended to be re-usable on the spot. 
-It's open-sourced as inspiration for others and reference.
+
+This is not intended to be re-usable on the spot, if you want to run this yourself, you will need to make several adjustements (e.g. override secrets).
+The code minimal and straight forward, so adjustments should be straight forward.
+This is shared for transparency and inspiration.
 
 ## Features
 
@@ -119,16 +121,18 @@ Debugging of the docker labels is sometimes a little bit tedious, as there is no
 
 Service configurations are stored in `./services/$name` they typically consists of two files:
 
-- `docker-compose.yaml` containing the actual service configuration
-- `Makefile` exposing targets `start`, `stop`, `test`
+- A `docker-compose.yaml` containing the actual service configuration
+- A `Makefile` exposing targets `start`, `stop`, `test`.
 
 Services can be selectively enabled/disabled using the `./svc.sh` tool.
 Only enabled services are started on `make start` and on boot.
 
 ``` shell
-./svc.sh list-available # list available services
+./svc.sh new $name # create new service scaffolding from template
 
 ./svc.sh enable $name # enable service with given name
+
+./svc.sh list-available # list available services
 
 ./svc.sh list # list enabled services
 
@@ -173,16 +177,3 @@ The naming of the datasets is reflecting the different storage tiers, that I use
     This was always a lot more complicated and brittle. Afterseveral episodes of data loss, I gave up on this approach for now.
     I am sure I am able to get this to work well-enough if I invested more time, but right now I this feature is not a priority.
 
-## Bootstrapping / Installation
-
-1. Make sure internet is working
-
-1. Make sure zfs volumnes are mounted under /share/hhartmann/*
-
-1. Get access to secrets using `git-crypt`. See `./crypt/README.md`.
-
-1. Update/Check DNS entries. See `./infrastructure/aws/`. We need a docker registry available under docker.heinrichhartmann.net.
-
-1. Create/Update SSL Certificates. `make certs`
-
-1. Enable services `./svc.sh activate $name`. Start services `make start`
