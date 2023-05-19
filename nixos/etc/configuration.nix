@@ -68,6 +68,7 @@
   virtualisation.docker = {
     enable = true;
     extraOptions =
-      "--registry-mirror=https://dockercache.heinrichhartmann.net --metrics-addr=0.0.0.0:9323";
+      "--registry-mirror=https://dockercache.heinrichhartmann.net --metrics-addr=0.0.0.0:9323 --log-opt fluentd-address=192.168.3.3:8006 --log-opt fluentd-async=true";
+    logDriver = "fluentd";
   };
 }
