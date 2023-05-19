@@ -1,8 +1,10 @@
 # SVC - Local Service Configurations
 
 This repository contains the configuration for several services I run at home.
-This is not intended to be re-usable on the spot. 
-It's open-sourced as inspiration for others and reference.
+
+This is not intended to be re-usable on the spot, if you want to run this yourself, you will need to make several adjustements (e.g. override secrets).
+The code minimal and straight forward, so adjustments should be straight forward.
+This is shared for transparency and inspiration.
 
 ## Features
 
@@ -22,7 +24,7 @@ The main server is running NixOS, with a config managed under [/nixos](nixos).
 Requirements:
 
 * This repository must be available under `/svc`.
-* Basic shell tools (`make`, `git`, `curl`) must be installed as well as `docker-compose`. See `make install-deps` for more details.
+* Basic shell tools (`make`, `git`, `curl`) must be installed as well as `docker-compose` and `bindfs`. See `make install-deps` for more details.
 
 <details>
 I was confused about the "correct" place to host the configuration for a long time, keeping it under $HOME/svc.
@@ -44,16 +46,17 @@ Hence using paths that are relative to the node root-fs "/" i.e. absolute is sen
 </details>
 
 
-### Crypt
+### Secrets
 
 Secrets are managed inside this repository using [git-crypt](https://github.com/AGWA/git-crypt).
+Files ending with `.crypt` are encrpyted inside the git repostiry, and only readable if your host is trusted.
 The trust model works as follows:
 
 1. On a new host, generate GPG keys and add the public key to the repository, then push.
 2. On an already trusted host, pull in the public keys and mark them as trusted, then push.
 3. On the new host, pull latest version. It now has access to the secrets.
 
-See ./crypt/README.md for more details.
+See [/crypt/README.md](crypt/README.md) for more details.
 
 **Open ends**
 
@@ -118,20 +121,18 @@ Debugging of the docker labels is sometimes a little bit tedious, as there is no
 
 Service configurations are stored in `./services/$name` they typically consists of two files:
 
-- `docker-compose.yaml` containing the actual service configuration
-- `Makefile` exposing targets `start`, `stop`, `test`
+- A `docker-compose.yaml` containing the actual service configuration
+- A `Makefile` exposing targets `start`, `stop`, `test`.
 
-Services are not enabled by default.
-Services are not started on boot by default.
-
-Services are managed with the tool `./svc.sh`.
-Befor a service can be used it must be enabled with `./svc.sh enable $name`, this will create a symlink in `./services.enabled`.
+Services can be selectively enabled/disabled using the `./svc.sh` tool.
+Only enabled services are started on `make start` and on boot.
 
 ``` shell
-
-./svc.sh list-available # list available services
+./svc.sh new $name # create new service scaffolding from template
 
 ./svc.sh enable $name # enable service with given name
+
+./svc.sh list-available # list available services
 
 ./svc.sh list # list enabled services
 
@@ -148,7 +149,7 @@ The main server where this configuration is running is equipped with two 8TB HDD
 Those are configured as a ZFS pool with a RAID 0 configuration, allowing us to compensate for the loss of one of the disks.
 
 We use zfs-autosnapshot to protect against accidental deletion.
-Off-site backup is realized via restic to backblaze for selected datasets.
+Off-site backup is realized via [restic](services/restic) to backblaze for selected datasets.
 
 There are 3 main filesystems on the pool, that differ in backup and replication strategy.
 
@@ -176,16 +177,3 @@ The naming of the datasets is reflecting the different storage tiers, that I use
     This was always a lot more complicated and brittle. Afterseveral episodes of data loss, I gave up on this approach for now.
     I am sure I am able to get this to work well-enough if I invested more time, but right now I this feature is not a priority.
 
-## Bootstrapping / Installation
-
-1. Make sure internet is working
-
-1. Make sure zfs volumnes are mounted under /share/hhartmann/*
-
-1. Get access to secrets using `git-crypt`. See `./crypt/README.md`.
-
-1. Update/Check DNS entries. See `./infrastructure/aws/`. We need a docker registry available under docker.heinrichhartmann.net.
-
-1. Create/Update SSL Certificates. `make certs`
-
-1. Enable services `./svc.sh activate $name`. Start services `make start`
