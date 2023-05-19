@@ -22,7 +22,7 @@ The main server is running NixOS, with a config managed under [/nixos](nixos).
 Requirements:
 
 * This repository must be available under `/svc`.
-* Basic shell tools (`make`, `git`, `curl`) must be installed as well as `docker-compose`. See `make install-deps` for more details.
+* Basic shell tools (`make`, `git`, `curl`) must be installed as well as `docker-compose` and `bindfs`. See `make install-deps` for more details.
 
 <details>
 I was confused about the "correct" place to host the configuration for a long time, keeping it under $HOME/svc.
@@ -44,16 +44,17 @@ Hence using paths that are relative to the node root-fs "/" i.e. absolute is sen
 </details>
 
 
-### Crypt
+### Secrets
 
 Secrets are managed inside this repository using [git-crypt](https://github.com/AGWA/git-crypt).
+Files ending with `.crypt` are encrpyted inside the git repostiry, and only readable if your host is trusted.
 The trust model works as follows:
 
 1. On a new host, generate GPG keys and add the public key to the repository, then push.
 2. On an already trusted host, pull in the public keys and mark them as trusted, then push.
 3. On the new host, pull latest version. It now has access to the secrets.
 
-See ./crypt/README.md for more details.
+See [/crypt/README.md](crypt/README.md) for more details.
 
 **Open ends**
 
@@ -121,14 +122,10 @@ Service configurations are stored in `./services/$name` they typically consists 
 - `docker-compose.yaml` containing the actual service configuration
 - `Makefile` exposing targets `start`, `stop`, `test`
 
-Services are not enabled by default.
-Services are not started on boot by default.
-
-Services are managed with the tool `./svc.sh`.
-Befor a service can be used it must be enabled with `./svc.sh enable $name`, this will create a symlink in `./services.enabled`.
+Services can be selectively enabled/disabled using the `./svc.sh` tool.
+Only enabled services are started on `make start` and on boot.
 
 ``` shell
-
 ./svc.sh list-available # list available services
 
 ./svc.sh enable $name # enable service with given name
@@ -148,7 +145,7 @@ The main server where this configuration is running is equipped with two 8TB HDD
 Those are configured as a ZFS pool with a RAID 0 configuration, allowing us to compensate for the loss of one of the disks.
 
 We use zfs-autosnapshot to protect against accidental deletion.
-Off-site backup is realized via restic to backblaze for selected datasets.
+Off-site backup is realized via [restic](services/restic) to backblaze for selected datasets.
 
 There are 3 main filesystems on the pool, that differ in backup and replication strategy.
 
