@@ -1,13 +1,10 @@
 DELAY ?= 0
 
 start:
-	sleep $(DELAY)
-	$(MAKE) mount
 	docker compose --ansi never up -d
 
 stop:
 	docker compose --ansi never down
-	$(MAKE) umount
 
 restart: stop start
 	# kick traefik
@@ -19,9 +16,3 @@ logs:
 test:
 	# Check all targets in URL=a.com b.com
 	source /svc/lib/include.sh && for url in $(URL); do check_url $$url; done
-
-mount:
-	# pass
-
-umount:
-	# pass

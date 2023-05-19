@@ -40,6 +40,17 @@ do
             sed -i "s/%HOST%/$1/g" "$1/"*
             break
             ;;
+        "start")
+            set -x # echo commands
+            cd ./services/$1 && make start
+            break
+            ;;
+        "stop")
+            set -x # echo commands
+            cd ./services/$1 && make stop
+            break
+            ;;
+
         *)
             cat $0
             exit 1

@@ -3,6 +3,7 @@
 let
   svcpath = [
     pkgs.coreutils
+    pkgs.util-linux # umount
     pkgs.bash
     pkgs.gnumake
     pkgs.docker
@@ -13,28 +14,19 @@ let
   ];
 in {
 
-  systemd.services.svc-startup = {
-    description = "Start /svc services";
-    after = [ "network.target" "zfs.target" ];
+  systemd.services.svc = {
+    description = "Manage /svc services";
+    after = [ "network.target" "zfs.target" "docker.service" ];
+    requires = [ "docker.service" ];
     wantedBy = [ "multi-user.target" ];
     unitConfig = { ConditionPathExists = "/svc"; };
     path = svcpath;
     serviceConfig = {
-      Type = "oneshot";
+      Type = "forking";
       WorkingDirectory = "/svc";
       ExecStart = "${pkgs.gnumake}/bin/make -C /svc startup";
-    };
-  };
-
-  systemd.services.svc-shutdown = {
-    description = "Stop /svc services";
-    before = [ "shutdown.target" ];
-    unitConfig = { ConditionPathExists = "/svc"; };
-    path = svcpath;
-    serviceConfig = {
-      Type = "oneshot";
-      WorkingDirectory = "/svc";
       ExecStop = "${pkgs.gnumake}/bin/make -C /svc shutdown";
+      RemainAfterExit = "yes";
     };
   };
 

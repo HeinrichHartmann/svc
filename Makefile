@@ -1,10 +1,23 @@
 startup: # called during book
 	echo "Starting up..."
-	make start
+	$(MAKE) mount
+	$(MAKE) start
 
 shutdown: # called during shutdown
 	echo "Shutting down..."
-	make stop
+	$(MAKE) stop
+	$(MAKE) umount
+
+mount:
+	# Warning: FUSE mounts are forking sub-processes that need to be kept alive
+	find -L ./services.enabled -type f -name "Makefile" \
+	  -exec sh -c 'if grep -q "mount:" "{}"; then (cd $$(dirname "{}") && make mount); fi' \;
+	-findmnt -r -o TARGET | grep '^/svc/mnt'  # report staus
+
+umount:
+	find -L ./services.enabled -type f -name "Makefile" \
+	  -exec sh -c 'if grep -q "umount:" "{}"; then (cd $$(dirname "{}") && make umount); fi' \;
+	-findmnt -r -o TARGET | grep '^/svc/mnt' # report staus
 
 cron: # this is called every hour
 	echo "Running cron..."
@@ -14,7 +27,7 @@ cron: # this is called every hour
 	if [[ $$(date +"%H") = "02" ]] &&  [[ $$(date +"%u") = "1" ]]; then make certs; fi
 	# run cron target for in enabled services
 	find -L ./services.enabled -type f -name "Makefile" \
-	  -exec sh -c 'if grep -q "cron:" "{}"; then echo "Running cron in {}"; (cd $$(dirname "{}") && make cron); fi' \;
+	  -exec sh -c 'if grep -q "cron:" "{}"; then (cd $$(dirname "{}") && make cron); fi' \;
 
 start:
 	# We need to start these first
@@ -30,7 +43,7 @@ stop:
 
 restart: stop start
 
-umount:
+umount-all:
 	# lazy unmount of all nested mounts under /svc/mnt
 	findmnt -r -o TARGET | grep '^/svc/mnt' | tac | xargs -n 1 sudo umount -l
 

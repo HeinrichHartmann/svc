@@ -1,22 +1,21 @@
 URL=prism.heinrichhartmann.net
-DELAY=60
 include /svc/lib/include.mk
 
 mount:
 	mkdir -p /svc/mnt/prism/pictures
-	sudo bindfs -u $$(id -u) -operms=a-w /share/hhartmann/garage/Pictures/Prism/ \
+	sudo bindfs -u 1000 -operms=a-w /share/hhartmann/garage/Pictures/Prism/ \
 	  /svc/mnt/prism/pictures
 
 	mkdir -p /svc/mnt/prism/pictures/attic
-	sudo bindfs -u $$(id -u) -operms=a-w /share/hhartmann/attic/Pictures/ \
+	sudo bindfs -u 1000 -operms=a-w /share/hhartmann/attic/Pictures/ \
 	  /svc/mnt/prism/pictures/attic
 
 	mkdir -p /svc/mnt/prism/import/camera-upload
-	sudo bindfs -u $$(id -u) --create-for-user=100 --create-for-group=101 /share/hhartmann/garage/camera-upload/ \
+	sudo bindfs -u 1000 --create-for-user=100 --create-for-group=101 /share/hhartmann/garage/camera-upload/ \
 	  /svc/mnt/prism/import/camera-upload
 
 	mkdir -p /svc/mnt/prism/import/sd-staging
-	sudo bindfs -u $$(id -u) --create-for-user=100 --create-for-group=101 /share/hhartmann/garage/SD-Staging/ \
+	sudo bindfs -u 1000 --create-for-user=100 --create-for-group=101 /share/hhartmann/garage/SD-Staging/ \
 	  /svc/mnt/prism/import/sd-staging
 
 umount:
