@@ -16,13 +16,13 @@ It's open-sourced as inspiration for others and reference.
 
 ### Host Setup
 
-This setup is designed to work in different environments including an dedicated
- server machine, a RPI and Linux Desktop environments.
+This setup is designed to work in different environments including an dedicated server machine, a RPI and Linux Desktop environments.
+The main server is running NixOS, with a config managed under [/nixos](nixos).
 
-On the host, this repository must be available under `/svc`.
+Requirements:
 
-The configuration rely on basic shell tools (`make`, `git`, `curl`) be installed as well as `docker-compose`. 
-See the definition of `make install-deps` for more details.
+* This repository must be available under `/svc`.
+* Basic shell tools (`make`, `git`, `curl`) must be installed as well as `docker-compose`. See `make install-deps` for more details.
 
 <details>
 I was confused about the "correct" place to host the configuration for a long time, keeping it under $HOME/svc.
