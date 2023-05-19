@@ -16,6 +16,9 @@ networks:
           gateway: 192.168.3.1
 
 services:
+  #
+  # Data Sources
+  #
   speedtest-exporter:
     container_name: speedtest-exporter
     image: miguelndecarvalho/speedtest-exporter
@@ -28,7 +31,6 @@ services:
     command:
       - '--config.file=/config/blackbox.yml'
 
-  # Disabled because of high constant CPU load
   cadvisor:
     container_name: cadvisor
     image: gcr.io/cadvisor/cadvisor:latest
@@ -45,6 +47,9 @@ services:
       - "--docker_only=true"
       - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl"
 
+  #
+  # Data Collectors
+  #
   prometheus:
     container_name: prometheus
     image: 'prom/prometheus:v2.25.2'
@@ -61,73 +66,6 @@ services:
     volumes:
       - './prometheus/:/etc/prometheus/'
       - '/share/hhartmann/var/prometheus:/prometheus'
-
-  grafana:
-    image: grafana/grafana
-    networks:
-      - default
-      - traefik
-    labels:
-      - 'traefik.http.routers.grafana.rule=HostRegexp(`grafana.{domain:.*}`)'
-      - traefik.http.routers.grafana.entrypoints=https
-      - traefik.http.routers.grafana.tls=true
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-    volumes:
-      - '/share/hhartmann/var/grafana:/var/lib/grafana'
-      - './grafana/provisioning/:/etc/grafana/provisioning/'
-
-  jaeger:
-    image: jaegertracing/all-in-one:1.37
-    networks:
-      - default
-      - traefik
-    labels:
-      - "traefik.http.routers.jaeger.rule=HostRegexp(`jaeger.{domain:.*}`)"
-      - "traefik.http.routers.jaeger.entrypoints=https"
-      - "traefik.http.routers.jaeger.tls=true"
-      - "traefik.enable=true"
-      - "traefik.http.middlewares.auth@file=true"
-      - "traefik.docker.network=traefik"
-      - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
-    environment:
-      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
-      - COLLECTOR_OTLP_ENABLED=true
-
-  logs:
-    image: amir20/dozzle:latest
-    networks:
-      - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.logs.rule=HostRegexp(`logs.{domain:.*}`)"
-      - "traefik.http.routers.logs.entrypoints=https"
-      - "traefik.http.routers.logs.tls=true"
-      - "traefik.http.routers.logs.middlewares=auth@file"
-      - "traefik.http.services.logs.loadbalancer.server.port=8080"
-      - "traefik.docker.network=traefik"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-
-  telegraf:
-    image: telegraf:1.25-alpine
-    volumes:
-      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
-
-  influxdb:
-     image: influxdb:latest
-     networks:
-       - default
-       - traefik
-     volumes:
-       - ./influx/influx-config.yml:/etc/influxdb2/config.yml
-       - /share/hhartmann/var/influxdb:/var/lib/influxdb2
-     labels:
-       - 'traefik.http.routers.influxdb.rule=HostRegexp(`influxdb.{domain:.*}`)'
-       - 'traefik.http.routers.influxdb.entrypoints=https'
-       - 'traefik.http.routers.influxdb.tls=true'
-       - 'traefik.enable=true'
-       - 'traefik.docker.network=traefik'
 
   otel-collector:
     container_name: otel-collector
@@ -146,6 +84,9 @@ services:
     depends_on:
       - jaeger
 
+  #
+  # Data Storage
+  #
   loki:
     image: grafana/loki:2.8.0
     command: -config.file=/etc/loki/local-config.yaml
@@ -156,3 +97,38 @@ services:
         ipv4_address: 192.168.3.4
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.37
+    networks:
+      - default
+      - traefik
+    labels:
+      - "traefik.http.routers.jaeger.rule=HostRegexp(`jaeger.{domain:.*}`)"
+      - "traefik.http.routers.jaeger.entrypoints=https"
+      - "traefik.http.routers.jaeger.tls=true"
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.auth@file=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+
+  #
+  # Data Visualization
+  #
+  grafana:
+    image: grafana/grafana
+    networks:
+      - default
+      - traefik
+    labels:
+      - 'traefik.http.routers.grafana.rule=HostRegexp(`grafana.{domain:.*}`)'
+      - traefik.http.routers.grafana.entrypoints=https
+      - traefik.http.routers.grafana.tls=true
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+    volumes:
+      - '/share/hhartmann/var/grafana:/var/lib/grafana'
+      - './grafana/provisioning/:/etc/grafana/provisioning/'

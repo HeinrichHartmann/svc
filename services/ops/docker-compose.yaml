@@ -20,3 +20,16 @@ services:
        - "traefik.http.routers.portainer.entrypoints=https"
        - "traefik.http.routers.portainer.tls=true"
        - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+  logs:
+    image: amir20/dozzle:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.logs.rule=HostRegexp(`logs.{domain:.*}`)"
+      - "traefik.http.routers.logs.entrypoints=https"
+      - "traefik.http.routers.logs.tls=true"
+      - "traefik.http.routers.logs.middlewares=auth@file"
+      - "traefik.http.services.logs.loadbalancer.server.port=8080"
+      - "traefik.docker.network=traefik"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

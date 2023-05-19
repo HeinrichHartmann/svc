@@ -108,16 +108,16 @@ service:
     logs/docker:
       receivers: [fluentforward/docker]
       processors: [batch, attributes/fluent_docker]
-      exporters: [file, logging, loki, loki/grafanacloud]
+      exporters: [loki, loki/grafanacloud]
     logs/systemd:
       receivers: [fluentforward/systemd]
       processors: [batch, attributes/fluent_systemd]
-      exporters: [file, logging, loki, loki/grafanacloud]
+      exporters: [loki, loki/grafanacloud]
     logs/loki:
       receivers: [loki]
       processors: [batch, attributes/loki]
-      exporters: [file, logging, loki, otlphttp/grafanacloud]
+      exporters: [loki, otlphttp/grafanacloud]
     logs/otel:
       receivers: [otlp]
       processors: [batch]
-      exporters: [file, logging, loki, otlphttp/grafanacloud]
+      exporters: [loki, otlphttp/grafanacloud]
