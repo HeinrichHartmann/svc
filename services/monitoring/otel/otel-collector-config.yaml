@@ -30,29 +30,24 @@ receivers:
     endpoint: 0.0.0.0:8007
 
   # used by promtail
-  loki:
+  loki/systemd:
     protocols:
       http:
         endpoint: 0.0.0.0:3100
 
 processors:
   batch:
-  attributes/loki:
-    actions:
-      - action: upsert
-        key: source
-        value: loki
-      - action: insert
-        key: loki.attribute.labels
-        value: unit, hostname, container_name, source, compose_project, compose_service
   attributes/fluent_docker:
     actions:
       - action: upsert
         key: source
         value: docker
+      - action: extract # remove prefix "/" from container_name
+        key: container_name
+        pattern: "^[/](?P<container_name>.*)$"
       - action: insert
         key: loki.attribute.labels
-        value: unit, hostname, container_name, source, fluent.tag
+        value: source, container_name
   attributes/fluent_systemd:
     actions:
       - action: upsert
@@ -60,7 +55,16 @@ processors:
         value: systemd
       - action: insert
         key: loki.attribute.labels
-        value: unit, hostname, container_name, source, fluent.tag
+        value: source, fluentd_tag
+  attributes/loki_systemd:
+    actions:
+      - action: upsert
+        key: source
+        value: systemd/loki
+      - action: insert
+        key: loki.attribute.labels
+        value: source, unit
+
 
 exporters:
   # print to console
@@ -110,7 +114,7 @@ service:
     traces/otlp:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging/info, otlp/jaeger, otlphttp/grafanacloud, otlp/ls]
+      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls]
     logs/docker:
       receivers: [fluentforward/docker]
       processors: [batch, attributes/fluent_docker]
@@ -120,8 +124,8 @@ service:
       processors: [batch, attributes/fluent_systemd]
       exporters: [loki, loki/grafanacloud]
     logs/loki:
-      receivers: [loki]
-      processors: [batch, attributes/loki]
+      receivers: [loki/systemd]
+      processors: [batch, attributes/loki_systemd]
       exporters: [loki, otlphttp/grafanacloud]
     logs/otel:
       receivers: [otlp]
