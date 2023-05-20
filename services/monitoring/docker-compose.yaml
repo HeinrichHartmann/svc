@@ -52,7 +52,7 @@ services:
   #
   prometheus:
     container_name: prometheus
-    image: 'prom/prometheus:v2.25.2'
+    image: 'prom/prometheus:latest'
     networks:
       - default
       - traefik
@@ -83,6 +83,13 @@ services:
       - /svc/var/otel:/var/otel
     depends_on:
       - jaeger
+    labels:
+      - 'traefik.http.routers.otel-collector.rule=HostRegexp(`otel-collector.{domain:.*}`)'
+      - 'traefik.http.routers.otel-collector.entrypoints=https'
+      - 'traefik.http.routers.otel-collector.tls=true'
+      - 'traefik.enable=true'
+      - 'traefik.http.services.otel-collector.loadbalancer.server.port=55679' # zpages
+      - 'traefik.docker.network=traefik'
 
   #
   # Data Storage

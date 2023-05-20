@@ -45,7 +45,7 @@
 
 [tracing]
   [tracing.jaeger]
-    localAgentHostPort = "otel-collector:6831"
+    localAgentHostPort = "otel-collector.pve.heinrichhartmann.net:6831"
 
 [metrics]
   [metrics.prometheus]

@@ -50,7 +50,11 @@ do
             cd ./services/$1 && make stop
             break
             ;;
-
+        "restart")
+            set -x # echo commands
+            cd ./services/$1 && make restart
+            break
+            ;;
         *)
             cat $0
             exit 1

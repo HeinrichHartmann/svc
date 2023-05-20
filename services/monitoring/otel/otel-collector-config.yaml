@@ -2,6 +2,7 @@ extensions:
   health_check:
   pprof:
   zpages:
+    endpoint: 0.0.0.0:55679
   basicauth/otlp:
     client_auth:
       username: 447801
@@ -63,7 +64,7 @@ processors:
 
 exporters:
   # print to console
-  logging:
+  logging/info:
     loglevel: info
 
   logging/debug:
@@ -102,10 +103,14 @@ exporters:
 service:
   extensions: [health_check, pprof, zpages, basicauth/otlp]
   pipelines:
-    traces:
-      receivers: [otlp, jaeger]
+    traces/jaeger:
+      receivers: [jaeger]
       processors: [batch]
       exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls]
+    traces/otlp:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging/info, otlp/jaeger, otlphttp/grafanacloud, otlp/ls]
     logs/docker:
       receivers: [fluentforward/docker]
       processors: [batch, attributes/fluent_docker]

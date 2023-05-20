@@ -64,19 +64,29 @@ scrape_configs:
       - target_label: __address__
         replacement: blackbox-exporter:9115  # The blackbox exporter's real hostname:port.
 
-  # - job_name: "blackbox-tcp"
-  #   scrape_interval: 15s
-  #   metrics_path: /probe
-  #   params:
-  #     module: [tcp_connect]
-  #     target: ['samba.heinrichhartmann.net:445']
-  #   static_configs:
-  #     - targets : ['blackbox-exporter:9115']
-  #       labels:
-  #         humanname: "samba"
-  #         routing: "internal"
-  #         instance: "samba.heinrichhartmann.net:445"
+  - job_name: "blackbox-tcp"
+    scrape_interval: 15s
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+      target: ['samba.heinrichhartmann.net:445']
+    static_configs:
+      - targets : ['blackbox-exporter:9115']
+        labels:
+          humanname: "samba"
+          routing: "internal"
+          instance: "samba.heinrichhartmann.net:445"
 
   - job_name: cadvisor
     static_configs:
     - targets: ['cadvisor:8080']
+
+  - job_name: otel-collector
+    scrape_interval: 15s
+    static_configs:
+    - targets: ['otel-collector:8888']
+
+tracing:
+  client_type: "http"
+  endpoint: otel-collector.pve.heinrichhartmann.net:4318
+  insecure: true
