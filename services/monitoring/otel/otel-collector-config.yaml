@@ -55,7 +55,7 @@ processors:
         value: systemd
       - action: insert
         key: loki.attribute.labels
-        value: source, fluentd_tag
+        value: source, fluent.tag
   attributes/loki_systemd:
     actions:
       - action: upsert
