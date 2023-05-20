@@ -65,6 +65,16 @@ resource "aws_route53_record" "samba_lan" {
   ttl = 300
 }
 
+resource "aws_route53_record" "otelcol_pve" {
+  zone_id = aws_route53_zone.hhnet.zone_id
+  name    = "otel-collector.pve.heinrichhartmann.net"
+  type    = "A"
+  records = [
+    "192.168.3.3",
+  ]
+  ttl = 300
+}
+
 resource "aws_route53_record" "tailscale" {
   zone_id = aws_route53_zone.hhnet.zone_id
   name    = "*.ts.heinrichhartmann.net"
