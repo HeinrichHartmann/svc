@@ -1,14 +1,11 @@
 networks:
-  traefik:
-    external: true
+  default:
     name: traefik
 
 services:
   traefik:
     image: traefik:latest
     container_name: traefik
-    networks:
-      - traefik
     ports:
       - 80:80 # http
       - 443:443 # https
@@ -22,8 +19,6 @@ services:
 
   whoami:
     image: traefik/whoami
-    networks:
-      - traefik
     labels:
       - 'traefik.http.routers.whoami.rule=HostRegexp(`whoami.{domain:.*}`)'
       - 'traefik.http.routers.whoami.entrypoints=https'

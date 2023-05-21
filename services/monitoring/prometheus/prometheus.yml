@@ -87,6 +87,5 @@ scrape_configs:
     - targets: ['otel-collector:8888']
 
 tracing:
-  client_type: "http"
-  endpoint: otel-collector.pve.heinrichhartmann.net:4318
+  endpoint: "otel-collector:4317"
   insecure: true

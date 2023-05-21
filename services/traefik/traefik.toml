@@ -44,8 +44,8 @@
   watch = true
 
 [tracing]
-  [tracing.jaeger]
-    localAgentHostPort = "otel-collector.pve.heinrichhartmann.net:6831"
+  [tracing.jaeger.collector]
+    endpoint = "http://otel-collector:14268/api/traces?format=jaeger.thrift"
 
 [metrics]
   [metrics.prometheus]

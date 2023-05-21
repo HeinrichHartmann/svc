@@ -2,10 +2,12 @@ startup: # called during book
 	echo "Starting up..."
 	$(MAKE) mount
 	$(MAKE) start
+	$(MAKE) start # HACK: First time fails because some networks are not yet available
 
 shutdown: # called during shutdown
 	echo "Shutting down..."
 	$(MAKE) stop
+	$(MAKE) prune
 	$(MAKE) umount
 
 mount:
@@ -65,7 +67,6 @@ test-all:
 prune:
 	docker network prune -f # delete unused networks
 	docker container prune -f # delete stopped containers
-	docker image prune -a -f # delete unused images
 
 certs:
 	cd ./infrastructure/letsencrypt; nix develop --command make certs
