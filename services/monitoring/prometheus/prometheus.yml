@@ -77,6 +77,18 @@ scrape_configs:
           routing: "internal"
           instance: "samba.heinrichhartmann.net:445"
 
+  - job_name: "blackbox-ping"
+    scrape_interval: 5s
+    metrics_path: /probe
+    params:
+      module: [icmp]
+      target: ['1.1.1.1', '8.8.8.8', '192.168.2.1']
+    static_configs:
+      - targets : ['blackbox-exporter:9115']
+        labels:
+          humanname: "ping"
+          routing: "external"
+
   - job_name: cadvisor
     static_configs:
     - targets: ['cadvisor:8080']

@@ -12,7 +12,6 @@
     - https://gogs.heinrichhartmann.net;gogs;internal
     - https://grafana.heinrichhartmann.net;grafana;internal
     - https://homeassistant.heinrichhartmann.net;homeassistant;internal
-    - https://influxdb.heinrichhartmann.net;influxdb;internal
     - https://jaeger.heinrichhartmann.net;jaeger;internal
     - https://jupyter.heinrichhartmann.net;jupyter;internal
     - https://logs.heinrichhartmann.net;logs;internal
