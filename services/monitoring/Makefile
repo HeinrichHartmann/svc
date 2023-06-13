@@ -2,6 +2,7 @@ URL=grafana.heinrichhartmann.net prometheus.heinrichhartmann.net jaeger.heinrich
 include /svc/lib/include.mk
 
 cron:
+	# populate pinghosts.yaml with active HTTP services
 	sed -i '/SVC START/q' ./prometheus/pinghosts.yaml
 	(cd /svc/services; grep -R HostRegexp \
 		| sed -n -r 's/^.*[`](.*)[.][{].*$$/\1/p' \

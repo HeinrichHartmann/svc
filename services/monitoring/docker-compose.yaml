@@ -125,7 +125,10 @@ services:
   # Data Visualization
   #
   grafana:
-    image: grafana/grafana
+    # image: grafana/grafana
+    build:
+      context: ./
+      dockerfile: ./grafana/Dockerfile
     networks:
       - default
       - traefik

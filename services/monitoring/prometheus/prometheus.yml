@@ -77,17 +77,61 @@ scrape_configs:
           routing: "internal"
           instance: "samba.heinrichhartmann.net:445"
 
+
   - job_name: "blackbox-ping"
     scrape_interval: 5s
     metrics_path: /probe
     params:
       module: [icmp]
-      target: ['1.1.1.1', '8.8.8.8', '192.168.2.1']
     static_configs:
-      - targets : ['blackbox-exporter:9115']
-        labels:
-          humanname: "ping"
-          routing: "external"
+      - targets:
+          # Syntax: <instance>;<humanname>;<routing>
+          - '192.168.2.1;Router;internal'
+          - '1.1.1.1;CloudFlare DNS;external'
+          - '8.8.8.8;Google DNS;external'
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*);(.*);(.*)'
+        target_label: instance
+        replacement: $1
+      - source_labels: [__address__]
+        regex: '(.*);(.*);(.*)'
+        target_label: humanname
+        replacement: $2
+      - source_labels: [__address__]
+        regex: '(.*);(.*);(.*)'
+        target_label: routing
+        replacement: $3
+      - source_labels: [instance]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  - job_name: "blackbox-ping-lan"
+    scrape_interval: 60s
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    file_sd_configs:
+      - files:
+        - ping-lan.yaml
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '(.*);(.*);(.*)'
+        target_label: instance
+        replacement: $1
+      - source_labels: [__address__]
+        regex: '(.*);(.*);(.*)'
+        target_label: humanname
+        replacement: $2
+      - source_labels: [__address__]
+        regex: '(.*);(.*);(.*)'
+        target_label: routing
+        replacement: $3
+      - source_labels: [instance]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
 
   - job_name: cadvisor
     static_configs:
