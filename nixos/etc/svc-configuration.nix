@@ -47,9 +47,31 @@ in {
   systemd.timers.svc-cron = {
     description = "Run 'make cron' in /svc every hour";
     timerConfig = {
-      OnCalendar = "*:0/1";
+      OnCalendar = "*-*-* *:00:00";
       Persistent = true;
       Unit = "svc-cron.service";
+    };
+  };
+
+  systemd.services.svc-metrics = {
+    description = "Run 'make metrics' in /svc";
+    after = [ "svc-startup.service" ];
+    wantedBy = [ "multi-user.target" ];
+    unitConfig = { ConditionPathExists = "/svc"; };
+    path = svcpath;
+    serviceConfig = {
+      Type = "oneshot";
+      WorkingDirectory = "/svc";
+      ExecStart = "${pkgs.gnumake}/bin/make -C /svc metrics";
+    };
+  };
+
+  systemd.timers.svc-metrics = {
+    description = "Run 'make metrics' in /svc every minute";
+    timerConfig = {
+      OnCalendar = "*-*-* *:*:00"; # every minute
+      Persistent = true;
+      Unit = "svc-metrics.service";
     };
   };
 
