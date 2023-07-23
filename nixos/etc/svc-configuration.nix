@@ -58,7 +58,8 @@ in {
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${pkgs.prometheus-node-exporter}/bin/node_exporter";
+      ExecStart =
+        "${pkgs.prometheus-node-exporter}/bin/node_exporter --collector.textfile.directory=/svc/var/prom/textfile_exporter";
       Restart = "always";
     };
   };

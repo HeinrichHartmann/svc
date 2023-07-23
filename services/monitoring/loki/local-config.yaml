@@ -23,6 +23,8 @@ query_range:
       embedded_cache:
         enabled: true
         max_size_mb: 100
+  parallelise_shardable_queries: true
+
 
 schema_config:
   configs:
@@ -48,4 +50,14 @@ ruler:
 #
 # If you would like to disable reporting, uncomment the following lines:
 analytics:
-  reporting_enabled: false
+  reporting_enabled: true
+
+
+# https://github.com/grafana/loki/issues/5123#issuecomment-1167018445
+query_scheduler:
+  max_outstanding_requests_per_tenant: 4096
+frontend:
+  max_outstanding_per_tenant: 4096
+limits_config:
+  split_queries_by_interval: 24h
+  max_query_parallelism: 32

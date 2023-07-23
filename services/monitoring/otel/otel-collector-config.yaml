@@ -65,6 +65,8 @@ processors:
         key: loki.attribute.labels
         value: source, unit
 
+connectors:
+  count:
 
 exporters:
   # print to console
@@ -104,30 +106,37 @@ exporters:
      headers:
        "lightstep-access-token" : ${env:LIGHTSTEP_TOKEN}
 
+  prometheus:
+    endpoint: 0.0.0.0:1234
+
+
 service:
   extensions: [health_check, pprof, zpages, basicauth/otlp]
   pipelines:
     traces/jaeger:
       receivers: [jaeger]
       processors: [batch]
-      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls]
+      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls, count]
     traces/otlp:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls]
+      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls, count]
     logs/docker:
       receivers: [fluentforward/docker]
       processors: [batch, attributes/fluent_docker]
-      exporters: [loki, loki/grafanacloud]
+      exporters: [loki, loki/grafanacloud, count]
     logs/systemd:
       receivers: [fluentforward/systemd]
       processors: [batch, attributes/fluent_systemd]
-      exporters: [loki, loki/grafanacloud]
+      exporters: [loki, loki/grafanacloud, count]
     logs/loki:
       receivers: [loki/systemd]
       processors: [batch, attributes/loki_systemd]
-      exporters: [loki, otlphttp/grafanacloud]
+      exporters: [loki, otlphttp/grafanacloud, count]
     logs/otel:
       receivers: [otlp]
       processors: [batch]
-      exporters: [loki, otlphttp/grafanacloud]
+      exporters: [loki, otlphttp/grafanacloud, count]
+    metrics/count:
+      receivers: [count]
+      exporters: [prometheus]

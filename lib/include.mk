@@ -16,3 +16,6 @@ logs:
 test:
 	# Check all targets in URL=a.com b.com
 	source /svc/lib/include.sh && for url in $(URL); do check_url $$url; done
+
+update:
+	docker compose pull -q

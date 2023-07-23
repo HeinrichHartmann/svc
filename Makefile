@@ -1,8 +1,13 @@
+# annotate std/stderr with service name
+ANNOTATE_IO = > >(sed -e "s|^|$$(basename $$(pwd)): |") 2> >(sed -e "s|^|$$(basename $$(pwd)) [stderr]: |" >&2)
+
 startup: # called during book
 	echo "Starting up..."
 	$(MAKE) mount
 	$(MAKE) start
-	$(MAKE) start # HACK: First time fails because some networks are not yet available
+	# HACK: First time fails because some networks are not yet available
+	sleep 10
+	$(MAKE) start
 
 shutdown: # called during shutdown
 	echo "Shutting down..."
@@ -36,10 +41,10 @@ start:
 	cd services/traefik && make start
 	cd services/docker && make start
 	# Loop through all active services and start them
-	for dir in services.enabled/*; do (cd "$$dir" && make start) & done; wait
+	for dir in services.enabled/*; do (cd "$$dir" && make start $(ANNOTATE_IO)) & done; wait
 
 stop:
-	for dir in services.enabled/*; do (cd "$$dir" && make stop) & done; wait
+	for dir in services.enabled/*; do (cd "$$dir" && make stop $(ANNOTATE_IO)) & done; wait
 	cd services/docker && make stop
 	cd services/traefik && make stop
 
@@ -54,15 +59,15 @@ stop-all:
 	docker rm $$(docker ps -a -q)
 
 update:
-	for dir in services.enabled/*; do (cd "$$dir" && docker-compose pull; make restart) & done; wait
+	for dir in services.enabled/*; do (cd "$$dir" && make update $(ANNOTATE_IO) ) & done; wait
 
 test:
-	@cd services/traefik && make test
-	@cd services/docker && make test
-	@for dir in services.enabled/*; do (cd "$$dir" && make --silent --no-print-directory test); done
+	@cd services/traefik && make test $(ANNOTATE_IO)
+	@cd services/docker && make test $(ANNOTATE_IO)
+	@for dir in services.enabled/*; do (cd "$$dir" && make --silent --no-print-directory test $(ANNOTATE_IO)); done
 
 test-all:
-	@for dir in services/*; do (cd "$$dir" && make test); done
+	@for dir in services/*; do (cd "$$dir" && make test  $(ANNOTATE_IO)); done
 
 prune:
 	docker network prune -f # delete unused networks
