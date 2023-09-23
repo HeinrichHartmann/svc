@@ -32,6 +32,7 @@ services:
       - "traefik.http.services.invidious.loadbalancer.server.port=3000"
       - "traefik.enable=true"
     environment:
+      INVIDIOUS_HMAC_KEY: c25a4206ee46d5a557cc3f912f580c1c7ca63dbc
       INVIDIOUS_CONFIG: |
         db:
           dbname: invidious

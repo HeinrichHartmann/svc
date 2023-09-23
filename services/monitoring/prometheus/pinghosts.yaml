@@ -9,6 +9,7 @@
     - https://books.heinrichhartmann.net;books;internal
     - https://docker.heinrichhartmann.net;docker;internal
     - https://dockercache.heinrichhartmann.net;dockercache;internal
+    - https://etherpad.heinrichhartmann.net;etherpad;internal
     - https://gogs.heinrichhartmann.net;gogs;internal
     - https://grafana.heinrichhartmann.net;grafana;internal
     - https://homeassistant.heinrichhartmann.net;homeassistant;internal
@@ -24,6 +25,7 @@
     - https://prometheus.heinrichhartmann.net;prometheus;internal
     - https://traefik.heinrichhartmann.net;traefik;internal
     - https://video.heinrichhartmann.net;video;internal
+    - https://wekan.heinrichhartmann.net;wekan;internal
     - https://whoami.heinrichhartmann.net;whoami;internal
     - https://wiki.heinrichhartmann.net;wiki;internal
     - https://www.heinrichhartmann.net;www;internal

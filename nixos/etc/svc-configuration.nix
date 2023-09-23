@@ -46,6 +46,7 @@ in {
 
   systemd.timers.svc-cron = {
     description = "Run 'make cron' in /svc every hour";
+    wantedBy = [ "timers.target" ];
     timerConfig = {
       OnCalendar = "*-*-* *:00:00";
       Persistent = true;
@@ -68,6 +69,7 @@ in {
 
   systemd.timers.svc-metrics = {
     description = "Run 'make metrics' in /svc every minute";
+    wantedBy = [ "timers.target" ];
     timerConfig = {
       OnCalendar = "*-*-* *:*:00"; # every minute
       Persistent = true;
