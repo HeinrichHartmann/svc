@@ -55,6 +55,16 @@ resource "aws_route53_record" "lan" {
   ttl = 300
 }
 
+resource "aws_route53_record" "x" {
+  zone_id = aws_route53_zone.hhnet.zone_id
+  name    = "*.x.heinrichhartmann.net"
+  type    = "A"
+  records = [
+    "192.168.2.12",
+  ]
+  ttl = 300
+}
+
 resource "aws_route53_record" "samba_lan" {
   zone_id = aws_route53_zone.hhnet.zone_id
   name    = "smb.lan.heinrichhartmann.net"

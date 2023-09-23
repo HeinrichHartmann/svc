@@ -18,6 +18,7 @@
     - https://logs.heinrichhartmann.net;logs;internal
     - https://mstream.heinrichhartmann.net;mstream;internal
     - https://music.heinrichhartmann.net;music;internal
+    - https://notebook.heinrichhartmann.net;notebook;internal
     - https://otel-collector.heinrichhartmann.net;otel-collector;internal
     - https://pile.heinrichhartmann.net;pile;internal
     - https://portainer.heinrichhartmann.net;portainer;internal

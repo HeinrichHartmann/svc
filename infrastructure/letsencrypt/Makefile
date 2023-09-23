@@ -8,6 +8,7 @@ certs:
 	  --agree-tos --email 'derhein@gmail.com' --no-eff-email \
 	  -d '*.heinrichhartmann.net' \
 	  -d '*.lan.heinrichhartmann.net' \
+	  -d '*.x.heinrichhartmann.net' \
 	  -d '*.ts.heinrichhartmann.net'
 
 help:

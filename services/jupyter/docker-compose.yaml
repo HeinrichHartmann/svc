@@ -21,3 +21,19 @@ services:
       - "traefik.http.services.jupyter.loadbalancer.server.port=8888"
     command:
       start.sh jupyter lab --LabApp.token=''
+
+  notebook:
+    image: docker.heinrichhartmann.net/hh-jupyter
+    volumes:
+      - /:/host/root
+      - /share:/share
+      - /share/hhartmann/var/jupyter:/work
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.notebook.rule=HostRegexp(`notebook.{domain:.*}`)"
+      - "traefik.http.routers.notebook.entrypoints=https"
+      - "traefik.http.routers.notebook.tls=true"
+      - "traefik.http.routers.notebook.middlewares=auth@file"
+      - "traefik.http.services.notebook.loadbalancer.server.port=8888"
+    command:
+      start.sh jupyter notebook --NotebookApp.token=''

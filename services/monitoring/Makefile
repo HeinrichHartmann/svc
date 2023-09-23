@@ -10,4 +10,4 @@ cron:
 		| sort | uniq \
 		| sed -r 's|(.*)|    - https://\1.heinrichhartmann.net;\1;internal|') \
 		>> ./prometheus/pinghosts.yaml
-	docker compose restart prometheus
+	docker compose kill -s SIGHUP prometheus
