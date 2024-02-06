@@ -17,6 +17,15 @@ services:
       - ./conf:/conf
       - /svc/var/letsencrypt:/svc/var/letsencrypt
 
+  traefik-forward-auth:
+    image: thomseddon/traefik-forward-auth:2
+    env_file:
+      ./env-auth-forward.crypt
+    labels:
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
+      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
+      - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181"
+
   whoami:
     image: traefik/whoami
     labels:

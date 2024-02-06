@@ -7,7 +7,7 @@ networks:
 
 services:
   books:
-    image: kizaing/kavita:latest
+    image: jvmilazz0/kavita:latest
     environment:
       - TZ=Berlin
     volumes:

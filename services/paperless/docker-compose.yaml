@@ -1,0 +1,73 @@
+# To install and update paperless with this file, do the following:
+#
+# - Copy this file as 'docker-compose.yml' and the files 'docker-compose.env'
+#   and '.env' into a folder.
+# - Run 'docker compose pull'.
+# - Run 'docker compose run --rm webserver createsuperuser' to create a user.
+# - Run 'docker compose up -d'.
+
+
+version: "3.9"
+
+networks:
+  default:
+    external: true
+    name: traefik
+
+volumes:
+  data:
+  media:
+  redisdata:
+
+services:
+  paperless:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.paperless.rule=HostRegexp(`paperless.{domain:.*}`)"
+      - "traefik.http.routers.paperless.entrypoints=https"
+      - "traefik.http.routers.paperless.tls=true"
+    depends_on:
+      - db
+      - broker
+    volumes:
+      - /svc/var/paperless/data:/usr/src/paperless/data
+      - /svc/var/paperless/media:/usr/src/paperless/media
+      - /svc/var/paperless/export:/usr/src/paperless/export
+      - /svc/var/paperless/consume:/usr/src/paperless/consume
+    env_file: docker-compose.env.crypt
+    environment:
+      PAPERLESS_REDIS: redis://broker:6379
+      PAPERLESS_DBHOST: db
+      PAPERLESS_TIKA_ENABLED: 1
+      PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
+      PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+
+  db:
+    image: docker.io/library/postgres:15
+    volumes:
+      - /svc/var/paperless/pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: paperless
+
+  broker:
+    image: docker.io/library/redis:7
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+  gotenberg:
+    image: docker.io/gotenberg/gotenberg:7.10
+    restart: unless-stopped
+    # The gotenberg chromium route is used to convert .eml files. We do not
+    # want to allow external content like tracking pixels or even javascript.
+    command:
+      - "gotenberg"
+      - "--chromium-disable-javascript=true"
+      - "--chromium-allow-list=file:///tmp/.*"
+
+  tika:
+    image: ghcr.io/paperless-ngx/tika:latest
+    restart: unless-stopped

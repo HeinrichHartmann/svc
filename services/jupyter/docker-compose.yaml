@@ -11,7 +11,8 @@ services:
     volumes:
       - /:/host/root
       - /share:/share
-      - /share/hhartmann/var/jupyter:/work
+      - /svc/var/jupyter/work:/work
+      - /svc/mnt/jupyter:/mnt
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jupyter.rule=HostRegexp(`jupyter.{domain:.*}`)"
@@ -27,7 +28,8 @@ services:
     volumes:
       - /:/host/root
       - /share:/share
-      - /share/hhartmann/var/jupyter:/work
+      - /svc/var/jupyter/work:/work
+      - /svc/mnt/jupyter:/mnt
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.notebook.rule=HostRegexp(`notebook.{domain:.*}`)"

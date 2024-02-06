@@ -4,12 +4,14 @@
     - https://eg-levern.de/;EG-Levern;external
     - https://stemwede.freie-demokraten.de/;FDP-stemwede;external
     # SVC START
+    - https://airflow.heinrichhartmann.net;airflow;internal
     - https://amp.heinrichhartmann.net;amp;internal
     - https://blog.heinrichhartmann.net;blog;internal
     - https://books.heinrichhartmann.net;books;internal
     - https://docker.heinrichhartmann.net;docker;internal
     - https://dockercache.heinrichhartmann.net;dockercache;internal
     - https://etherpad.heinrichhartmann.net;etherpad;internal
+    - https://focalboard.heinrichhartmann.net;focalboard;internal
     - https://gogs.heinrichhartmann.net;gogs;internal
     - https://grafana.heinrichhartmann.net;grafana;internal
     - https://homeassistant.heinrichhartmann.net;homeassistant;internal
@@ -18,8 +20,10 @@
     - https://logs.heinrichhartmann.net;logs;internal
     - https://mstream.heinrichhartmann.net;mstream;internal
     - https://music.heinrichhartmann.net;music;internal
+    - https://nix.heinrichhartmann.net;nix;internal
     - https://notebook.heinrichhartmann.net;notebook;internal
     - https://otel-collector.heinrichhartmann.net;otel-collector;internal
+    - https://paperless.heinrichhartmann.net;paperless;internal
     - https://pile.heinrichhartmann.net;pile;internal
     - https://portainer.heinrichhartmann.net;portainer;internal
     - https://prism.heinrichhartmann.net;prism;internal

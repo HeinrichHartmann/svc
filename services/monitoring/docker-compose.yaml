@@ -80,8 +80,8 @@ services:
     volumes:
       - ./otel:/otel
       - /svc/var/otel:/var/otel
-    depends_on:
-      - jaeger
+    # depends_on:
+    #   - jaeger
     labels:
       - 'traefik.http.routers.otel-collector.rule=HostRegexp(`otel-collector.{domain:.*}`)'
       - 'traefik.http.routers.otel-collector.entrypoints=https'
@@ -105,21 +105,21 @@ services:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
       - /svc/var/loki:/var/loki
 
-  jaeger:
-    image: jaegertracing/all-in-one:1.37
-    networks:
-      - default
-      - traefik
-    labels:
-      - "traefik.http.routers.jaeger.rule=HostRegexp(`jaeger.{domain:.*}`)"
-      - "traefik.http.routers.jaeger.entrypoints=https"
-      - "traefik.http.routers.jaeger.tls=true"
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik"
-      - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
-    environment:
-      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
-      - COLLECTOR_OTLP_ENABLED=true
+  # jaeger:
+  #   image: jaegertracing/all-in-one:1.37
+  #   networks:
+  #     - default
+  #     - traefik
+  #   labels:
+  #     - "traefik.http.routers.jaeger.rule=HostRegexp(`jaeger.{domain:.*}`)"
+  #     - "traefik.http.routers.jaeger.entrypoints=https"
+  #     - "traefik.http.routers.jaeger.tls=true"
+  #     - "traefik.enable=true"
+  #     - "traefik.docker.network=traefik"
+  #     - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
+  #   environment:
+  #     - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+  #     - COLLECTOR_OTLP_ENABLED=true
 
   #
   # Data Visualization

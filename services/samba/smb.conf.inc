@@ -6,6 +6,14 @@
    veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
    delete veto files = yes
 
+[paperless]
+   path = /smb/paperless
+   browsable = yes
+   read only = no
+   guest ok = yes
+   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
+   delete veto files = yes
+
 [all]
    path = /smb
    browsable = yes

@@ -14,7 +14,6 @@
     "lhartmann:$apr1$q7Tbhb78$fXCNe8Czi6fLHN/HmjHaJ.",
   ]
 
-
 [http.routers.traefik]
   entryPoints = ["https","traefik"]
   tls = true
@@ -27,6 +26,7 @@
   service = "service-1"
   tls = true
 
+
 [http.services]
 [http.services.service-1.loadBalancer]
 [[http.services.service-1.loadBalancer.servers]]
@@ -35,3 +35,13 @@
   path = "/"
   interval = "10s"
   timeout = "3s"
+
+[http.routers.nix]
+  entryPoints = ["https","traefik"]
+  tls = true
+  rule = "HostRegexp(`nix.{domain:.*}`)"
+  service = "nix"
+
+[http.services.nix.loadBalancer]
+[[http.services.nix.loadBalancer.servers]]
+  url = "http://192.168.2.12:9090/"

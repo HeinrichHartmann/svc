@@ -23,7 +23,7 @@
   };
 
   fileSystems."/var/lib/docker" = {
-    device = "/dev/zvol/data-iron/docker-lib-vol";
+    device = "/dev/disk/by-uuid/1cd8fea8-7af5-4145-8e6e-5e88e328e9ff";
     fsType = "ext4";
   };
 

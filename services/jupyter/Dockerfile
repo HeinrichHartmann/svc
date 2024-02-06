@@ -26,4 +26,6 @@ WORKDIR /work
 #
 # bash kernel: http://slhogle.github.io/2017/bash_jupyter_notebook/
 RUN pip install bash_kernel && python -m bash_kernel.install
-RUN pip install nbmerge
+
+RUN pip install nbmerge jupyter_scheduler
+RUN jupyter server extension enable --user --py jupyter_scheduler
