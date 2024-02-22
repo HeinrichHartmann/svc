@@ -1,7 +1,16 @@
 SHELL = /bin/bash
 
-update:
+switch:
 	nixos-rebuild switch --flake .
+
+build:
+	nixos-rebuild build  --flake .
+
+diff:
+	echo "# List"
+	-diff -Naurq /run/current-system ./result
+	echo "# Diff"
+	-diff -Naur /run/current-system ./result
 
 help:
 	cat Makefile

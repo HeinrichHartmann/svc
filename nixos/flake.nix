@@ -9,7 +9,7 @@
         modules = [
           ./configuration.nix
           ./modules/tailscale.nix
-          ./modules/svc-configuration.nix
+          ./modules/svc-services.nix
           ./modules/zfs-configuration.nix
         ];
       };
