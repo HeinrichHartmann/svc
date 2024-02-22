@@ -3,7 +3,6 @@ SHELL = /bin/bash
 update:
 	nixos-rebuild switch --flake .
 
-
 help:
 	cat Makefile
 
