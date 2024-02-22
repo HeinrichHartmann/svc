@@ -1,16 +1,19 @@
 SHELL = /bin/bash
 
-switch:
-	nixos-rebuild switch --flake .
-
-build:
+result: $(find . -name '*.nix')
 	nixos-rebuild build  --flake .
 
+@PHONY: diff
 diff:
 	echo "# List"
 	-diff -Naurq /run/current-system ./result
+	read
 	echo "# Diff"
 	-diff -Naur /run/current-system ./result
+
+@PHONY: switch
+switch:
+	nixos-rebuild switch --flake .
 
 help:
 	cat Makefile

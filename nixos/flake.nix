@@ -11,6 +11,7 @@
           ./modules/tailscale.nix
           ./modules/svc-services.nix
           ./modules/zfs-configuration.nix
+          ./modules/monitoring.nix
         ];
       };
     };
