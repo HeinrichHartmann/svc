@@ -24,7 +24,7 @@
   boot.loader.systemd-boot.enable = true;
 
   # Copy configuration on switch
-  system.copySystemConfiguration = true;
+  # system.copySystemConfiguration = true;
 
   # Cleanup system automatically
   nix.gc = {
@@ -45,12 +45,12 @@
   users.users.hhartmann = {
     # Exactly one of isNormalUser and isSystemUser must be true
     # Normal User: This automatically sets group to users, createHome to true, home to /home/«username», useDefaultShell to true, and isSystemUser to false. Exactly one of isNormalUser and isSystemUser must be true.
-    # System User:  This option only has an effect if uid is null, in which case it determines whether the user’s UID is allocated in the range for system users (below 1000) or in the range for normal users (starting at 1000).
+    # System User: This option only has an effect if uid is null, in which case it determines whether the user’s UID is allocated in the range for system users (below 1000) or in the range for normal users (starting at 1000).
     isNormalUser = true;
     shell = pkgs.zsh;
     extraGroups =
       [ "wheel" "docker" "qemu-libvirtd" "smbgroup" ]; # wheel = ‘sudo’
-    openssh.authorizedKeys.keyFiles = [ /etc/nixos/ssh/authorized_keys ];
+    openssh.authorizedKeys.keyFiles = [ ./etc/authorized_keys ];
   };
 
   # Passwordless sudo
@@ -59,7 +59,7 @@
   # List packages installed in system profile
   environment.systemPackages = with pkgs; [
     zsh
-    emacs
+    emacs-nox
     curl
     wget
     tmux
@@ -68,9 +68,10 @@
     zsh
     ripgrep
     docker-compose
-    bridge-utils
     gnumake
+
     htop
+    bridge-utils
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -88,13 +89,14 @@
     logDriver = "fluentd";
   };
 
-  # usb-pi
+  # Access for "upload" user used by usb-pi
   # Add user for uploading files
   users.users.upload = {
     isNormalUser = true;
     home = "/share/hhartmann/garage/upload";
     openssh.authorizedKeys.keys = [
       "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDUeADHUudcZqvkeiWYhb0Fpxx89ulerWVm+Tp0XqKjYEaXLyuxc7pMpUJURWLxRVRzp9y55hEbb8ezrXMkIqFhEk41TkVULA0w1H4qMLpHKNghhLKw1zeOLbIFD/YA1sGYeO11WS8bUxmza3wQ5u+GbOkPzyc7/hGPEIFYi8l3zOTWI6Xrgc6snMFZ4X7+k7AZnjYMIBhC8usRSAqkdggIhot+0vBpTI4dJuUpptLEfKd52OoEL9bC3faQF7iW+GTj27oX+YCR1YoVcc+wUpNJ3xX2N5DUE352Pc9zdkKDvmGxmZzcmflwmAqYfM3IZyFQS7AdXZQLyZ6cQu/eh3YYlDTeQmLoW0YgthM3MF1LWRTTq2IEsk7aiuhJF8rq5ROeS3jkIk/DLfTT6VHLb+TlCEs2B1dYmckt40M8dkL5nBZWdvdksnd37wkz56Wg8SDR1n6VdBAI/395h4FlUJUelqGIp+RSCYIwwlan/NETl4Tjoxg7NIkwkqhRcQ8FF2c= pi@piusb"
+      "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDlE0NvrB2V6pCLmUu5JImY4yP4q0GgqIcAZfQGptoFG6VbKwJHsw4TZN5HynSWq/thmbo1riNrKPjPHVV3QK+z/fIp0SmOrt4s0d9SBRX+pM9pZskJyQ8OCkr339Diz1gc7vo5FdiD13onHhbJrtX1npLcWboDBr2BWQN5lIAOhoQ95MBY3My6pOdbhgcBFTu7F+O+DKO6dT4rnI61nTH68f33/wDsyc2mtiiLktaq+gsR5hNXxi8eommUH47p/cZyc8wMVmBvwAxnyKuWjgRyRospKzTnKZHRi8GdNAIFoyOE2NEWbkvRBxG7ZWUqitlE6JypVs+fR5YAN1BDZJoorqIgDBX7nzW/gjGZH2+6aI8DpDmX6VQjKK8JiEczRaFnnQ3UZRHIQw/vMaGvya643Dg35nLAfbPafGvGIJ2RgkSuwB/mrFUAcGE4apNI3pU1g2SCeqEQFZOIuDdikbGoynL0CfNcgz6sgkhjBZzI/xV528l3+s/8c4F4twC6hVs= root@nixos"
     ];
   };
 
@@ -103,5 +105,9 @@
     enable = true;
     port = 9090;
   };
+
+  # Allow cross-compilation for RPI
+  # https://nixos.wiki/wiki/NixOS_on_ARM#Compiling_through_QEMU
+  boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
 }

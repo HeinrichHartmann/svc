@@ -96,7 +96,7 @@ in {
     serviceConfig = {
       Type = "simple";
       ExecStart = ''
-        ${pkgs.fluent-bit}/bin/fluent-bit -c ${./fluentbit.conf}
+        ${pkgs.fluent-bit}/bin/fluent-bit -c ${./etc/fluentbit.conf}
       '';
     };
   };
@@ -105,8 +105,9 @@ in {
     description = "Promtail service for Loki";
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
-      ExecStart =
-        "${pkgs.grafana-loki}/bin/promtail --config.file ${./promtail.yaml}";
+      ExecStart = "${pkgs.grafana-loki}/bin/promtail --config.file ${
+          ./etc/promtail.yaml
+        }";
     };
   };
 
