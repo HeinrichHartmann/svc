@@ -1,33 +1,8 @@
 { config, pkgs, ... }:
 
 {
-  networking = {
-    hostName = "pve";
-    hostId = "73eb52c1"; # "$(head -c 8 /etc/machine-id)";
-    networkmanager.enable = false;
-    nameservers = [ "1.1.1.1" "8.8.8.8" ];
-    interfaces.eno2.ipv4.addresses = [
-      {
-        address = "192.168.2.12";
-        prefixLength = 24;
-      }
-      {
-        address = "192.168.2.13"; # samba
-        prefixLength = 24;
-      }
-    ];
-    defaultGateway = "192.168.2.1";
-  };
 
-  # make the tailscale command usable to users
-  environment.systemPackages = [
-    pkgs.tailscale
-    pkgs.ethtool # manage NIC settings (offload, NIC feeatures, ...)
-    pkgs.tcpdump # view network traffic
-    pkgs.conntrack-tools # view network connection states
-    pkgs.iptables
-    pkgs.nftables
-  ];
+  environment.systemPackages = [ pkgs.tailscale ];
 
   # enable the tailscale service
   services.tailscale.enable = true;

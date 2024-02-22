@@ -6,7 +6,12 @@
     in {
       nixosConfigurations.pve = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
-        modules = [ ./configuration.nix ];
+        modules = [
+          ./configuration.nix
+          ./modules/tailscale.nix
+          ./modules/svc-configuration.nix
+          ./modules/zfs-configuration.nix
+        ];
       };
     };
 }

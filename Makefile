@@ -36,8 +36,8 @@ cron: # this is called every hour
 	find -L ./services.enabled -type f -name "Makefile" \
 	  -exec sh -c 'if grep -q "cron:" "{}"; then (cd $$(dirname "{}") && make cron); fi' \;
 
-
 metrics:
+	rm -f /svc/var/tmp/metrics.prom
 	find -L ./services.enabled -type f -name "Makefile" \
 	  -exec sh -c 'if grep -q "metrics:" "{}"; then (cd $$(dirname "{}") && make metrics --silent); fi' \; \
 		> /svc/var/tmp/metrics.prom

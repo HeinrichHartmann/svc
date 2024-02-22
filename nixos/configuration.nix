@@ -13,12 +13,25 @@
   system.autoUpgrade.allowReboot = false;
   system.autoUpgrade.channel = "https://nixos.org/channels/nixos-22.11";
 
-  imports = [ # Include the results of the hardware scan.
-    ./hardware-configuration.nix
-    ./network-configuration.nix
-    ./zfs-configuration.nix
-    ./svc-configuration.nix
-  ];
+  imports = [ ./hardware-configuration.nix ];
+
+  networking = {
+    hostName = "pve";
+    hostId = "73eb52c1"; # "$(head -c 8 /etc/machine-id)";
+    networkmanager.enable = false;
+    nameservers = [ "1.1.1.1" "8.8.8.8" ];
+    interfaces.eno2.ipv4.addresses = [
+      {
+        address = "192.168.2.12";
+        prefixLength = 24;
+      }
+      {
+        address = "192.168.2.13"; # samba
+        prefixLength = 24;
+      }
+    ];
+    defaultGateway = "192.168.2.1";
+  };
 
   # Bootloader Config
   boot.loader.systemd-boot.enable = true;
@@ -72,6 +85,12 @@
 
     htop
     bridge-utils
+
+    ethtool # manage NIC settings (offload, NIC feeatures, ...)
+    tcpdump # view network traffic
+    conntrack-tools # view network connection states
+    iptables
+    nftables
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
