@@ -33,7 +33,6 @@ resource "aws_route53_record" "gw" {
   ttl = 300
 }
 
-
 resource "aws_route53_record" "root" {
   zone_id = aws_route53_zone.hhnet.zone_id
   name    = "*.heinrichhartmann.net"
@@ -44,20 +43,9 @@ resource "aws_route53_record" "root" {
   ttl = 300
 }
 
-
 resource "aws_route53_record" "lan" {
   zone_id = aws_route53_zone.hhnet.zone_id
   name    = "*.lan.heinrichhartmann.net"
-  type    = "A"
-  records = [
-    "192.168.2.12",
-  ]
-  ttl = 300
-}
-
-resource "aws_route53_record" "x" {
-  zone_id = aws_route53_zone.hhnet.zone_id
-  name    = "*.x.heinrichhartmann.net"
   type    = "A"
   records = [
     "192.168.2.12",
@@ -143,6 +131,7 @@ resource "aws_route53_record" "ts_wildcards" {
 locals {
   ls_domain = "lenas-staudengarten.de"
   ls_bucketname = "lenas-staudengarten.de"
+  ls_origin = aws_s3_bucket_website_configuration.ls_bucket.website_endpoint
 }
 
 resource "aws_s3_bucket" ls_bucket {
@@ -203,8 +192,8 @@ resource aws_cloudfront_distribution ls_distribution {
   is_ipv6_enabled = true
   price_class = "PriceClass_100"
   origin {
-    domain_name = aws_s3_bucket.ls_bucket.website_endpoint
-    origin_id = aws_s3_bucket.ls_bucket.website_endpoint
+    domain_name = local.ls_origin
+    origin_id = local.ls_origin
     custom_origin_config {
       http_port = 80
       https_port = 443
@@ -215,7 +204,7 @@ resource aws_cloudfront_distribution ls_distribution {
   default_cache_behavior {
     allowed_methods = ["GET", "HEAD"]
     cached_methods = ["GET", "HEAD"]
-    target_origin_id = aws_s3_bucket.ls_bucket.website_endpoint
+    target_origin_id = local.ls_origin
     viewer_protocol_policy = "redirect-to-https"
     compress = true
     min_ttl          = "0"
@@ -269,6 +258,7 @@ resource aws_route53_record ls_cdn_root_www {
 locals {
   hh_domain = "heinrichhartmann.com"
   hh_bucketname = "heinrichhartmann.com"
+  hh_origin = aws_s3_bucket_website_configuration.hh_bucket.website_endpoint
 }
 
 resource "aws_s3_bucket" hh_bucket {
@@ -320,7 +310,7 @@ resource aws_route53_zone hh_zone {
 resource aws_acm_certificate hh_certificate {
   provider = aws.us-east-1
   domain_name = local.hh_domain
-  subject_alternative_names = [ format("www.%s", local.hh_domain) ]
+  subject_alternative_names = [ format("www.%s", local.hh_domain), format("*.%s", local.hh_domain) ]
   validation_method = "DNS"
 }
 
@@ -330,8 +320,8 @@ resource aws_cloudfront_distribution hh_distribution {
   is_ipv6_enabled = true
   price_class = "PriceClass_100"
   origin {
-    domain_name = aws_s3_bucket.hh_bucket.website_endpoint
-    origin_id = aws_s3_bucket.hh_bucket.website_endpoint
+    domain_name = local.hh_origin
+    origin_id = local.hh_origin
     custom_origin_config {
       http_port = 80
       https_port = 443
@@ -342,7 +332,7 @@ resource aws_cloudfront_distribution hh_distribution {
   default_cache_behavior {
     allowed_methods = ["GET", "HEAD"]
     cached_methods = ["GET", "HEAD"]
-    target_origin_id = aws_s3_bucket.hh_bucket.website_endpoint
+    target_origin_id = local.hh_origin
     viewer_protocol_policy = "redirect-to-https"
     compress = true
     min_ttl          = "0"
@@ -365,7 +355,6 @@ resource aws_cloudfront_distribution hh_distribution {
     ssl_support_method = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
-
 }
 
 resource aws_route53_record hh_cdn_root {
