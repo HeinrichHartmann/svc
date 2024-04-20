@@ -87,6 +87,9 @@
     conntrack-tools # view network connection states
     iptables
     nftables
+
+    bcc
+    bpftrace
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
