@@ -2,6 +2,9 @@ URL=prism.heinrichhartmann.net
 include /svc/lib/include.mk
 
 mount:
+	#
+	# Photo Library / Originals
+	#
 	mkdir -p /svc/mnt/prism/pictures
 	sudo bindfs -u 1000 -operms=a-w /share/hhartmann/garage/Pictures/Prism/ \
 	  /svc/mnt/prism/pictures
@@ -10,6 +13,9 @@ mount:
 	sudo bindfs -u 1000 -operms=a-w /share/hhartmann/attic/Pictures/ \
 	  /svc/mnt/prism/pictures/attic
 
+	#
+	# Import folders
+	#
 	mkdir -p /svc/mnt/prism/import/camera-upload
 	sudo bindfs -u 1000 --create-for-user=100 --create-for-group=101 /share/hhartmann/garage/camera-upload/ \
 	  /svc/mnt/prism/import/camera-upload
