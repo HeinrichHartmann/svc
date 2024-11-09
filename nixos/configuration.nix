@@ -64,6 +64,7 @@
 
   # Passwordless sudo
   security.sudo.wheelNeedsPassword = false;
+  security.sudo.enable = true;
 
   # List packages installed in system profile
   environment.systemPackages = with pkgs; [
@@ -97,8 +98,13 @@
 
   programs.zsh.enable = true;
   programs.mosh.enable = true;
-  services.openssh.enable = true;
   networking.firewall.enable = false;
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = true;
+    };
+  };
   virtualisation.docker = {
     enable = true;
     storageDriver = "overlay2";
@@ -127,5 +133,9 @@
   # Allow cross-compilation for RPI
   # https://nixos.wiki/wiki/NixOS_on_ARM#Compiling_through_QEMU
   boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
+
+  environment.etc = {
+    "test.txt".text = "Hello world!";
+  };
 
 }

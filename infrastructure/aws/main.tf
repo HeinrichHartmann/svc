@@ -180,73 +180,31 @@ resource aws_route53_zone ls_zone {
   name = local.ls_domain
 }
 
-resource aws_acm_certificate ls_certificate {
-  provider = aws.us-east-1
-  domain_name = local.ls_domain
-  validation_method = "DNS"
+# CNAME record for verification
+resource "aws_route53_record" "verification_record" {
+  zone_id = aws_route53_zone.ls_zone.id
+  name    = "pt8s8ryda3lk47d4t6c6"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["verify.squarespace.com"]
 }
 
-resource aws_cloudfront_distribution ls_distribution {
-  enabled = true
-  aliases = [ local.ls_domain, format("www.%s", local.ls_domain) ]
-  is_ipv6_enabled = true
-  price_class = "PriceClass_100"
-  origin {
-    domain_name = local.ls_origin
-    origin_id = local.ls_origin
-    custom_origin_config {
-      http_port = 80
-      https_port = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols = ["TLSv1.2"]
-    }
-  }
-  default_cache_behavior {
-    allowed_methods = ["GET", "HEAD"]
-    cached_methods = ["GET", "HEAD"]
-    target_origin_id = local.ls_origin
-    viewer_protocol_policy = "redirect-to-https"
-    compress = true
-    min_ttl          = "0"
-    default_ttl      = "300"
-    max_ttl          = "1200"
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
-  }
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-  viewer_certificate {
-    acm_certificate_arn = aws_acm_certificate.ls_certificate.arn
-    ssl_support_method = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
-  }
-
+# CNAME record for www
+resource "aws_route53_record" "www_record" {
+  zone_id = aws_route53_zone.ls_zone.id
+  name    = "www"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["ext-cust.squarespace.com"]
 }
 
-resource aws_route53_record ls_cdn_root {
-  zone_id = aws_route53_zone.ls_zone.zone_id
-  name    = local.ls_domain
+# A records
+resource "aws_route53_record" "a_record_1" {
+  zone_id = aws_route53_zone.ls_zone.id
+  name    = "@"
   type    = "A"
-  alias {
-    name                   = aws_cloudfront_distribution.ls_distribution.domain_name
-    zone_id                = aws_cloudfront_distribution.ls_distribution.hosted_zone_id
-    evaluate_target_health = false
-  }
-}
-
-resource aws_route53_record ls_cdn_root_www {
-  zone_id = aws_route53_zone.ls_zone.zone_id
-  name    = format("www.%s", local.ls_domain)
-  type = "CNAME"
-  records = [ local.ls_domain ]
-  ttl = 300
+  ttl     = 300
+  records = ["198.185.159.144", "198.185.159.145", "198.49.23.144", "198.49.23.145" ]
 }
 
 
