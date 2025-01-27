@@ -71,3 +71,18 @@
    veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
    delete veto files = yes
    valid users = hhartmann lhartmann
+
+[lhartmann]
+   path = /smb/lhartmann
+   browsable = yes
+   force user =
+   force group =
+   read only = no
+   guest ok = no
+   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
+   delete veto files = yes
+   valid users = lhartmann
+
+[global]
+    idmap config * : backend = tdb
+    idmap config * : range = 10000-20000

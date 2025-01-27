@@ -17,6 +17,7 @@ mount:
 	mkdir -p /svc/mnt/jupyter
 	mkdir -p /svc/mnt/jupyter/Finanzen
 	bindfs -u 1000 -g 100 --create-for-user=100 --create-for-group=101 /share/hhartmann/attic/Finanzen /svc/mnt/jupyter/Finanzen
+	bindfs -u 1000 -g 100 --create-for-user=1000 --create-for-group=100 /home/hhartmann /svc/mnt/jupyter/home
 
 umount:
 	-umount /svc/mnt/jupyter/*
