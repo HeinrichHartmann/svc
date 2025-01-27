@@ -183,7 +183,7 @@ resource aws_route53_zone ls_zone {
 # CNAME record for verification
 resource "aws_route53_record" "verification_record" {
   zone_id = aws_route53_zone.ls_zone.id
-  name    = "pt8s8ryda3lk47d4t6c6"
+  name    = "yfkppn77sxl7y8xzn2cd"
   type    = "CNAME"
   ttl     = 300
   records = ["verify.squarespace.com"]
@@ -201,7 +201,7 @@ resource "aws_route53_record" "www_record" {
 # A records
 resource "aws_route53_record" "a_record_1" {
   zone_id = aws_route53_zone.ls_zone.id
-  name    = "@"
+  name    = ""
   type    = "A"
   ttl     = 300
   records = ["198.185.159.144", "198.185.159.145", "198.49.23.144", "198.49.23.145" ]
