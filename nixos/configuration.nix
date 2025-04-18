@@ -41,6 +41,7 @@
     dates = "weekly";
     options = "--delete-older-than 30d";
   };
+  nix.package = pkgs.nixVersions.latest;
 
   # Set your time zone.
   time.timeZone = "Europe/Berlin";
