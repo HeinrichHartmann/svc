@@ -5,7 +5,7 @@ extensions:
     endpoint: 0.0.0.0:55679
   basicauth/otlp:
     client_auth:
-      username: 447801
+      username: "447801"
       password: "${env:GRAFANA_CLOUD_KEY}"
 
 receivers:
@@ -69,13 +69,6 @@ connectors:
   count:
 
 exporters:
-  # print to console
-  logging/info:
-    loglevel: info
-
-  logging/debug:
-    loglevel: debug
-
   file:
     path: /var/otel/otel-collector.log
     flush_interval: 1s
@@ -109,6 +102,11 @@ exporters:
   prometheus:
     endpoint: 0.0.0.0:1234
 
+  otlp/dash0:
+    endpoint: "ingress.eu-west-1.aws.dash0.com:4317"
+    headers:
+      Authorization: "Bearer auth_M9P9D4rxXiiSL5QcTmEWspzwtkqYmnm4"
+      "Dash0-Dataset": "default"
 
 service:
   extensions: [health_check, pprof, zpages, basicauth/otlp]
@@ -116,27 +114,27 @@ service:
     traces/jaeger:
       receivers: [jaeger]
       processors: [batch]
-      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls, count]
+      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls, count, otlp/dash0]
     traces/otlp:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls, count]
+      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls, count, otlp/dash0]
     logs/docker:
       receivers: [fluentforward/docker]
       processors: [batch, attributes/fluent_docker]
-      exporters: [loki, loki/grafanacloud, count]
+      exporters: [loki, loki/grafanacloud, count, otlp/dash0]
     logs/systemd:
       receivers: [fluentforward/systemd]
       processors: [batch, attributes/fluent_systemd]
-      exporters: [loki, loki/grafanacloud, count]
+      exporters: [loki, loki/grafanacloud, count, otlp/dash0]
     logs/loki:
       receivers: [loki/systemd]
       processors: [batch, attributes/loki_systemd]
-      exporters: [loki, otlphttp/grafanacloud, count]
+      exporters: [loki, otlphttp/grafanacloud, count, otlp/dash0]
     logs/otel:
       receivers: [otlp]
       processors: [batch]
-      exporters: [loki, otlphttp/grafanacloud, count]
+      exporters: [loki, otlphttp/grafanacloud, count, otlp/dash0]
     metrics/count:
       receivers: [count]
-      exporters: [prometheus]
+      exporters: [prometheus, otlp/dash0]
