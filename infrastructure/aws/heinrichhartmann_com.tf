@@ -159,4 +159,24 @@ resource "aws_route53_record" "mx_record_mail" {
   type    = "MX"
   ttl     = 300
   records = ["10 inbound-smtp.us-east-1.amazonaws.com"]
+}
+
+resource "aws_s3_bucket_policy" "ses_mail_email_storage_policy" {
+  bucket = aws_s3_bucket.ses_mail_email_storage.id
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ses.amazonaws.com"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::mail-heinrichhartmann.com-email-storage/*"
+    }
+  ]
+}
+POLICY
 } 
