@@ -117,4 +117,46 @@ resource aws_route53_record hh_cdn_root_www {
   type = "CNAME"
   records = [ local.hh_domain ]
   ttl = 300
+}
+
+resource "aws_ses_domain_identity" "mail_subdomain" {
+  domain = "mail.${local.hh_domain}"
+}
+
+resource "aws_route53_record" "ses_verification_mail" {
+  zone_id = aws_route53_zone.hh_zone.zone_id
+  name    = "_amazonses.mail.${local.hh_domain}"
+  type    = "TXT"
+  ttl     = 300
+  records = [aws_ses_domain_identity.mail_subdomain.verification_token]
+}
+
+resource "aws_s3_bucket" "ses_mail_email_storage" {
+  bucket = "mail-${local.hh_domain}-email-storage"
+}
+
+resource "aws_ses_receipt_rule_set" "mail_rule_set" {
+  rule_set_name = "mail_rule_set"
+}
+
+resource "aws_ses_receipt_rule" "mail_rule" {
+  rule_set_name = aws_ses_receipt_rule_set.mail_rule_set.rule_set_name
+  name          = "mail_rule"
+  enabled       = true
+
+  recipients = ["mail.${local.hh_domain}"]
+
+  s3_action {
+    position         = 1
+    bucket_name      = aws_s3_bucket.ses_mail_email_storage.bucket
+    object_key_prefix = "emails/"
+  }
+}
+
+resource "aws_route53_record" "mx_record_mail" {
+  zone_id = aws_route53_zone.hh_zone.zone_id
+  name    = "mail.${local.hh_domain}"
+  type    = "MX"
+  ttl     = 300
+  records = ["10 inbound-smtp.us-east-1.amazonaws.com"]
 } 
