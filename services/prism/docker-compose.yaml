@@ -12,7 +12,7 @@ services:
       - seccomp:unconfined
       - apparmor:unconfined
     volumes:
-      - "/share/hhartmann/var/prism/database:/var/lib/mysql" # DO NOT REMOVE
+      - "/share/hhartmann/var/prism2/database:/var/lib/mysql" # DO NOT REMOVE
     environment:
       MARIADB_AUTO_UPGRADE: "1"
       MARIADB_INITDB_SKIP_TZINFO: "1"
@@ -65,10 +65,14 @@ services:
       PHOTOPRISM_SITE_CAPTION: "AI-Powered Photos App"
       PHOTOPRISM_SITE_DESCRIPTION: ""                # meta site description
       PHOTOPRISM_SITE_AUTHOR: ""                     # meta site author
+      #
       PHOTOPRISM_FACE_KIDS_DIST: "-1"                # Don't exclude kids "0.6950" #
+      PHOTOPRISM_AUTO_IMPORT: 300                    # AutoImport & Index after WebDAV upload
+      PHOTOPRISM_AUTO_INDEX: 300
+
     working_dir: "/photoprism" # do not change or remove
     ## Storage Folders: "~" is a shortcut for your home directory, "." for the current directory
     volumes:
-      - "/svc/mnt/prism/pictures:/photoprism/originals"  # Original media files (DO NOT REMOVE)
-      - "/svc/mnt/prism/import:/photoprism/import"       # *Optional* base folder from which files can be imported to originals
-      - "/share/hhartmann/var/prism/storage:/photoprism/storage"     # *Writable* storage folder for cache, database, and sidecar files (DO NOT REMOVE)
+      - "/share/hhartmann/attic/PhotoPrism-Originals:/photoprism/originals"  # Original media files (DO NOT REMOVE)
+      - "/share/hhartmann/garage/PhotoPrism-Import:/photoprism/import"       # *Optional* base folder from which files can be imported to originals
+      - "/share/hhartmann/var/prism2/storage:/photoprism/storage" # *Writable* storage folder for cache, database, and sidecar files (DO NOT REMOVE)
