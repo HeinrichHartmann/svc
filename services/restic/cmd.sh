@@ -9,6 +9,9 @@ set -x
 
 while true;
 do
+    # Perform Maintenance
+    restic --cache-dir=/cache --host pve --repo b2:hh-restic-b2 forget --keep-daily 7 --keep-weekly 4 --keep-monthly 60 --prune
+
     # Trigger an immediate backup now
     echo "[$(date)] Running backup"
     restic --cache-dir=/cache --host pve --repo b2:hh-restic-b2 -v backup /share/shelf

@@ -55,7 +55,6 @@ stop:
 	cd services/docker && make stop
 	cd services/traefik && make stop
 
-
 restart: stop start
 
 umount-all:
