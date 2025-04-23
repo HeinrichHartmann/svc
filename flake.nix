@@ -17,6 +17,7 @@
           pkgs.bindfs
           pkgs.git
           pkgs.opentofu
+          pkgs.awscli2
         ]; };
       }
     );
