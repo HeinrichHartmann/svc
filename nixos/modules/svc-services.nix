@@ -77,4 +77,25 @@ in {
     };
   };
 
+  systemd.services.nix-index = {
+    description = "Run nix-index daily";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      Environment = "NIX_PATH=nixpkgs=${pkgs.path}";
+      ExecStart = "${pkgs.nix-index}/bin/nix-index";
+    };
+  };
+
+  systemd.timers.nix-index = {
+    description = "Run nix-index daily";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+      Unit = "nix-index.service";
+    };
+  };
+
 }
