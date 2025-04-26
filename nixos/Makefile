@@ -1,13 +1,13 @@
 SHELL = /bin/bash
-export NIXPKGS_ALLOW_UNFREE = 1
+NIXCMD = nixos-rebuild --flake .
 
 @PHONY: switch
 switch:
-	nixos-rebuild --impure --flake . switch
+	$(NIXCMD) switch
 
 @PHONY: rebuild
 rebuild:
-	nixos-rebuild --impure  --flake . build
+	$(NIXCMD) build
 
 @PHONY: diff
 diff:
