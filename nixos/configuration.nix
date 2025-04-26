@@ -77,11 +77,12 @@
     git
     git-lfs
     zsh
-    ripgrep
     docker-compose
     gnumake
+    systemctl-tui
 
     htop
+    btop
     bridge-utils
 
     ethtool # manage NIC settings (offload, NIC feeatures, ...)
@@ -89,9 +90,14 @@
     conntrack-tools # view network connection states
     iptables
     nftables
+    lsof
+    iotop
 
     bcc
     bpftrace
+    oxtools # https://0x.tools/ ; psn, xcapture-bpf, syscallargs, shedlat, xcapture
+    gdb
+    lldb
   ];
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

@@ -1,12 +1,13 @@
 SHELL = /bin/bash
+export NIXPKGS_ALLOW_UNFREE = 1
 
 @PHONY: switch
 switch:
-	sudo nixos-rebuild switch --flake .
+	nixos-rebuild --impure --flake . switch
 
 @PHONY: rebuild
 rebuild:
-	nixos-rebuild build  --flake .
+	nixos-rebuild --impure  --flake . build
 
 @PHONY: diff
 diff:
