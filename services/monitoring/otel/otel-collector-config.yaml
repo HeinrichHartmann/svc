@@ -3,10 +3,7 @@ extensions:
   pprof:
   zpages:
     endpoint: 0.0.0.0:55679
-  basicauth/otlp:
-    client_auth:
-      username: "447801"
-      password: "${env:GRAFANA_CLOUD_KEY}"
+
 
 receivers:
   # Receivers are available at 192.168.3.3
@@ -73,31 +70,10 @@ exporters:
     path: /var/otel/otel-collector.log
     flush_interval: 1s
 
-  # send to jaeger.heinrichhartmann.net
-  otlp/jaeger:
-    endpoint: "jaeger:4317"
-    tls:
-      insecure: true
-
   # send to local loki/Grafana
   loki:
     endpoint: "http://192.168.3.4:3100/loki/api/v1/push"
 
-  # send to Grafana Cloud
-  otlphttp/grafanacloud:
-    auth:
-      authenticator: basicauth/otlp
-    endpoint: "https://otlp-gateway-prod-eu-west-0.grafana.net/otlp"
-
-  # For some reason otlp/grafanacloud does reject the logs. We use a loki exporter instead
-  loki/grafanacloud:
-    endpoint: ${env:GRAFANA_CLOUD_LOKI_URL}
-
-  # send to LightStep Saas
-  otlp/ls:
-     endpoint: ingest.lightstep.com:443
-     headers:
-       "lightstep-access-token" : ${env:LIGHTSTEP_TOKEN}
 
   prometheus:
     endpoint: 0.0.0.0:1234
@@ -109,32 +85,32 @@ exporters:
       "Dash0-Dataset": "default"
 
 service:
-  extensions: [health_check, pprof, zpages, basicauth/otlp]
+  extensions: [health_check, pprof, zpages]
   pipelines:
     traces/jaeger:
       receivers: [jaeger]
       processors: [batch]
-      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls, count, otlp/dash0]
+      exporters: [count, otlp/dash0]
     traces/otlp:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/jaeger, otlphttp/grafanacloud, otlp/ls, count, otlp/dash0]
+      exporters: [count, otlp/dash0]
     logs/docker:
       receivers: [fluentforward/docker]
       processors: [batch, attributes/fluent_docker]
-      exporters: [loki, loki/grafanacloud, count, otlp/dash0]
+      exporters: [loki, count, otlp/dash0]
     logs/systemd:
       receivers: [fluentforward/systemd]
       processors: [batch, attributes/fluent_systemd]
-      exporters: [loki, loki/grafanacloud, count, otlp/dash0]
+      exporters: [loki, count, otlp/dash0]
     logs/loki:
       receivers: [loki/systemd]
       processors: [batch, attributes/loki_systemd]
-      exporters: [loki, otlphttp/grafanacloud, count, otlp/dash0]
+      exporters: [loki, count, otlp/dash0]
     logs/otel:
       receivers: [otlp]
       processors: [batch]
-      exporters: [loki, otlphttp/grafanacloud, count, otlp/dash0]
+      exporters: [loki, count]
     metrics/count:
       receivers: [count]
       exporters: [prometheus, otlp/dash0]
