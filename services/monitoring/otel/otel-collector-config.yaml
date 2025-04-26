@@ -64,6 +64,7 @@ processors:
 
 connectors:
   count:
+  forward:
 
 exporters:
   file:
@@ -87,6 +88,32 @@ exporters:
 service:
   extensions: [health_check, pprof, zpages]
   pipelines:
+    logs/docker:
+      receivers: [fluentforward/docker]
+      processors: [batch, attributes/fluent_docker]
+      exporters: [forward]
+    logs/systemd:
+      receivers: [fluentforward/systemd]
+      processors: [batch, attributes/fluent_systemd]
+      exporters: [forward]
+    logs/loki:
+      receivers: [loki/systemd]
+      processors: [batch, attributes/loki_systemd]
+      exporters: [forward]
+    logs/otel:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [forward]
+
+    logs/forward:
+      receivers: [forward]
+      exporters: [
+        count
+        , loki
+        , otlp/dash0,
+        # , file
+      ]
+
     traces/jaeger:
       receivers: [jaeger]
       processors: [batch]
@@ -95,22 +122,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [count, otlp/dash0]
-    logs/docker:
-      receivers: [fluentforward/docker]
-      processors: [batch, attributes/fluent_docker]
-      exporters: [loki, count, otlp/dash0]
-    logs/systemd:
-      receivers: [fluentforward/systemd]
-      processors: [batch, attributes/fluent_systemd]
-      exporters: [loki, count, otlp/dash0]
-    logs/loki:
-      receivers: [loki/systemd]
-      processors: [batch, attributes/loki_systemd]
-      exporters: [loki, count, otlp/dash0]
-    logs/otel:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [loki, count]
+
     metrics/count:
       receivers: [count]
       exporters: [prometheus, otlp/dash0]
