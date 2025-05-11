@@ -1,3 +1,12 @@
+[all]
+   path = /smb
+   browsable = yes
+   read only = no
+   guest ok = no
+   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
+   delete veto files = yes
+   valid users = hhartmann
+
 [public]
    path = /smb/pub
    browsable = yes
@@ -13,15 +22,6 @@
    guest ok = yes
    veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
    delete veto files = yes
-
-[all]
-   path = /smb
-   browsable = yes
-   read only = no
-   guest ok = no
-   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
-   delete veto files = yes
-   valid users = hhartmann
 
 [hhartmann]
    force group = 
