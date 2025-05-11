@@ -14,7 +14,6 @@ do
 
     # Trigger an immediate backup now
     echo "[$(date)] Running backup"
-    restic --cache-dir=/cache --host pve --repo b2:hh-restic-b2 -v backup /share/shelf
     restic --cache-dir=/cache --host pve --repo b2:hh-restic-b2 -v backup /share/attic
 
     # Sleep until next bakup interval
