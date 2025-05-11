@@ -4,7 +4,6 @@ extensions:
   zpages:
     endpoint: 0.0.0.0:55679
 
-
 receivers:
   # Receivers are available at 192.168.3.3
   otlp:
@@ -65,6 +64,7 @@ processors:
 connectors:
   count:
   forward:
+  datadog/connector:
 
 exporters:
   file:
@@ -84,6 +84,11 @@ exporters:
     headers:
       Authorization: "Bearer auth_M9P9D4rxXiiSL5QcTmEWspzwtkqYmnm4"
       "Dash0-Dataset": "default"
+
+  datadog:
+    api:
+      site: ${env:DD_SITE}
+      key: ${env:DD_API_KEY}
 
 service:
   extensions: [health_check, pprof, zpages]
@@ -110,7 +115,8 @@ service:
       exporters: [
         count
         , loki
-        , otlp/dash0,
+        , otlp/dash0
+        , datadog
         # , file
       ]
 

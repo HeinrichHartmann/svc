@@ -14,8 +14,8 @@ services:
     image: docker.heinrichhartmann.net/pile-video
     volumes:
       - /share/hhartmann/garage/Videos/:/usr/src/app/videos
-      - /share/hhartmann/garage/Vcache/:/usr/src/app/cache
-      - /share/hhartmann/garage/Vtmp/:/usr/src/app/tmp
+      - /share/hhartmann/var/pile-video/Vcache/:/usr/src/app/cache
+      - /share/hhartmann/var/pile-video/Vtmp/:/usr/src/app/tmp
       - /share/hhartmann/attic/Music/Video:/usr/src/app/mp3
     labels:
       - "traefik.http.routers.video.rule=HostRegexp(`video.{domain:.*}`)"

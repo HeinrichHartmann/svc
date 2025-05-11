@@ -8,3 +8,4 @@
 /services.enabled/
 /infrastructure/aws/*.backup
 /var2/
+.direnv/
