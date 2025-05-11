@@ -1,10 +1,10 @@
 export AWS_SHARED_CREDENTIALS_FILE = ./aws-credentials.crypt
 
 plan: # preview changes
-	terraform plan
+	tofu plan
 
 apply: # apply changes
-	terraform apply
+	tofu apply
 
 init: # need to run this once
-	terraform init
+	tofu init
