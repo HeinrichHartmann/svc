@@ -61,3 +61,12 @@ frontend:
 limits_config:
   split_queries_by_interval: 24h
   max_query_parallelism: 32
+  retention_period: 720h  # 30 days
+
+compactor:
+  working_directory: /var/loki/compactor
+  shared_store: filesystem
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150

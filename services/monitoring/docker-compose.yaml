@@ -30,7 +30,7 @@ services:
         ipv4_address: 192.168.3.3
     volumes:
       - ./otel:/otel
-      - /svc/var/otel:/var/otel
+      - /share/hhartmann/var/otel:/var/otel
     labels:
       - 'traefik.http.routers.otel-collector.rule=HostRegexp(`otel-collector.{domain:.*}`)'
       - 'traefik.http.routers.otel-collector.entrypoints=https'
@@ -101,7 +101,8 @@ services:
         ipv4_address: 192.168.3.4
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
-      - /svc/var/loki:/var/loki
+      - /share/hhartmann/var/loki:/var/loki
+
 
   #
   # Data Visualization

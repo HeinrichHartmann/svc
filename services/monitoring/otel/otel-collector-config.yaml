@@ -113,22 +113,17 @@ service:
     logs/forward:
       receivers: [forward]
       exporters: [
-        count
-        , loki
-        , otlp/dash0
-        , datadog
-        # , file
+        count, loki
       ]
 
     traces/jaeger:
       receivers: [jaeger]
       processors: [batch]
-      exporters: [count, otlp/dash0]
+      exporters: [count]
     traces/otlp:
       receivers: [otlp]
       processors: [batch]
-      exporters: [count, otlp/dash0]
-
+      exporters: [count]
     metrics/count:
       receivers: [count]
-      exporters: [prometheus, otlp/dash0]
+      exporters: [prometheus]

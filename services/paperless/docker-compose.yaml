@@ -7,8 +7,6 @@
 # - Run 'docker compose up -d'.
 
 
-version: "3.9"
-
 networks:
   default:
     external: true
@@ -31,10 +29,12 @@ services:
       - db
       - broker
     volumes:
-      - /svc/var/paperless/data:/usr/src/paperless/data
-      - /svc/var/paperless/media:/usr/src/paperless/media
-      - /svc/var/paperless/export:/usr/src/paperless/export
-      - /svc/var/paperless/consume:/usr/src/paperless/consume
+      - /share/hhartmann/var/paperless/data:/usr/src/paperless/data
+      - /share/hhartmann/var/paperless/media:/usr/src/paperless/media
+      - /share/hhartmann/var/paperless/export:/usr/src/paperless/export
+      - /share/hhartmann/var/paperless/consume:/usr/src/paperless/consume
+      - /share/hhartmann/attic/Paperless-Originals:/usr/src/paperless/media/documents/originals
+      - /share/hhartmann/garage/Paperless-Import:/usr/src/paperless/consume
     env_file: docker-compose.env.crypt
     environment:
       PAPERLESS_REDIS: redis://broker:6379
@@ -42,11 +42,12 @@ services:
       PAPERLESS_TIKA_ENABLED: 1
       PAPERLESS_TIKA_GOTENBERG_ENDPOINT: http://gotenberg:3000
       PAPERLESS_TIKA_ENDPOINT: http://tika:9998
+      PAPERLESS_FILENAME_FORMAT : "{{ created_year }}/{{ created }} - {{ title }}"
 
   db:
     image: docker.io/library/postgres:15
     volumes:
-      - /svc/var/paperless/pgdata:/var/lib/postgresql/data
+      - /share/hhartmann/var/paperless/pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: paperless
       POSTGRES_USER: paperless
