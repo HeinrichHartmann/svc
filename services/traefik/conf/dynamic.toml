@@ -1,6 +1,6 @@
 [[tls.certificates]]
-  certFile = "/svc/var/letsencrypt/config/live/heinrichhartmann.net/fullchain.pem" #  /certs/domain.cert
-  keyFile = "/svc/var/letsencrypt/config/live/heinrichhartmann.net/privkey.pem" # /certs/domain.key
+  certFile = "/var/letsencrypt/config/live/heinrichhartmann.net/fullchain.pem" #  /certs/domain.cert
+  keyFile = "/var/letsencrypt/config/live/heinrichhartmann.net/privkey.pem" # /certs/domain.key
   stores = ["default"]
 
 # Create users with

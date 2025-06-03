@@ -1,32 +1,17 @@
+[global]
+    idmap config * : backend = tdb
+    idmap config * : range = 10000-20000
+
 [public]
-   path = /smb/pub
+   path = /share/public
    browsable = yes
    read only = no
    guest ok = yes
    veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
    delete veto files = yes
-
-[paperless]
-   path = /smb/paperless
-   browsable = yes
-   read only = no
-   guest ok = yes
-   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
-   delete veto files = yes
-
-[all]
-   path = /smb
-   browsable = yes
-   read only = no
-   guest ok = no
-   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
-   delete veto files = yes
-   valid users = hhartmann
 
 [hhartmann]
-   force group = 
-   force user = 
-   path = /smb/hhartmann
+   path = /share/hhartmann
    browsable = yes
    read only = no
    guest ok = no
@@ -34,46 +19,8 @@
    delete veto files = yes
    valid users = hhartmann
 
-[share]
-   map archive = no
-   path = /smb/share
-   browsable = yes
-   read only = no
-   guest ok = no
-   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
-   delete veto files = yes
-   valid users = hhartmann lhartmann
-   admin users = hhartmann
-
-[videos]
-   path = /smb/share/garage/Videos
-   browsable = yes
-   read only = yes
-   guest ok = no
-   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
-   delete veto files = yes
-   valid users = kodi
-
-[music]
-   path = /smb/share/attic/Music
-   browsable = yes
-   read only = yes
-   guest ok = no
-   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
-   delete veto files = yes
-   valid users = kodi
-
-[pictures]
-   path = /smb/pictures
-   browsable = yes
-   read only = yes
-   guest ok = no
-   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
-   delete veto files = yes
-   valid users = hhartmann lhartmann
-
 [lhartmann]
-   path = /smb/lhartmann
+   path = /share/lhartmann
    browsable = yes
    force user =
    force group =
@@ -81,8 +28,12 @@
    guest ok = no
    veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
    delete veto files = yes
-   valid users = lhartmann
+   valid users = lhartmann hhartmann
 
-[global]
-    idmap config * : backend = tdb
-    idmap config * : range = 10000-20000
+[paperless] # used by scanner
+   path = /share/hhartmann/var/paperless/consume/scan
+   browsable = yes
+   read only = no
+   guest ok = yes
+   veto files = /.apdisk/.DS_Store/.TemporaryItems/.Trashes/desktop.ini/ehthumbs.db/Network Trash Folder/Temporary Items/Thumbs.db/
+   delete veto files = yes

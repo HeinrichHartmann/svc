@@ -1,21 +1,22 @@
-version: "3.9"
-
 networks:
   default:
     external: true
     name: traefik
 
 services:
-  books:
-    image: jvmilazz0/kavita:latest
+  calibre:
+    image: lscr.io/linuxserver/calibre-web:latest
     environment:
-      - TZ=Berlin
+      - PUID=1000
+      - PGID=100
+      - TZ=Etc/UTC
+      - DOCKER_MODS=linuxserver/mods:universal-calibre #optional
     volumes:
-      - /share/hhartmann/garage/Library/:/books/garage:ro
-      - /share/hhartmann/attic/Books/:/books/attic:ro
-      - /share/hhartmann/var/kavita:/kavita/config
+      - /share/hhartmann/var/calibre/config:/config
+      - /share/hhartmann/garage/Library:/books/garage:ro
+      - /share/hhartmann/attic/Books:/books/attic:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.books.rule=HostRegexp(`books.{domain:.*}`)"
-      - "traefik.http.routers.books.entrypoints=https"
-      - "traefik.http.routers.books.tls=true"
+      - "traefik.http.routers.calibre.rule=HostRegexp(`books.{domain:.*}`)"
+      - "traefik.http.routers.calibre.entrypoints=https"
+      - "traefik.http.routers.calibre.tls=true"

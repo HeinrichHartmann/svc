@@ -15,7 +15,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik.toml:/etc/traefik/traefik.toml
       - ./conf:/conf
-      - /svc/var/letsencrypt:/svc/var/letsencrypt
+      - /share/hhartmann/var/letsencrypt:/var/letsencrypt
 
   traefik-forward-auth:
     image: thomseddon/traefik-forward-auth:2

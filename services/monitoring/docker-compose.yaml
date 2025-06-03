@@ -1,5 +1,3 @@
-version: "3.9"
-
 networks:
   default:
     name: "monitoring"
@@ -16,6 +14,48 @@ networks:
           gateway: 192.168.3.1
 
 services:
+  #
+  # Data Collectors
+  #
+  otel-collector:
+    container_name: otel-collector
+    image: otel/opentelemetry-collector-contrib:latest
+    command: [--config=/otel/otel-collector-config.yaml]
+    env_file:
+      - ./otel/otel-collector.env.crypt
+    networks:
+      default:
+      traefik:
+      hostbridge:
+        ipv4_address: 192.168.3.3
+    volumes:
+      - ./otel:/otel
+      - /share/hhartmann/var/otel:/var/otel
+    labels:
+      - 'traefik.http.routers.otel-collector.rule=HostRegexp(`otel-collector.{domain:.*}`)'
+      - 'traefik.http.routers.otel-collector.entrypoints=https'
+      - 'traefik.http.routers.otel-collector.tls=true'
+      - 'traefik.enable=true'
+      - 'traefik.http.services.otel-collector.loadbalancer.server.port=55679' # zpages
+      - 'traefik.docker.network=traefik'
+
+  prometheus:
+    container_name: prometheus
+    image: 'prom/prometheus:latest'
+    networks:
+      - default
+      - traefik
+    labels:
+      - 'traefik.http.routers.prometheus.rule=HostRegexp(`prometheus.{domain:.*}`)'
+      - 'traefik.http.routers.prometheus.entrypoints=https'
+      - 'traefik.http.routers.prometheus.tls=true'
+      - 'traefik.enable=true'
+      - 'traefik.docker.network=traefik'
+    volumes:
+      - './prometheus/:/etc/prometheus/'
+      - '/share/hhartmann/var/prometheus:/prometheus'
+
+
   #
   # Data Sources
   #
@@ -47,48 +87,6 @@ services:
       - "--docker_only=true"
       - "--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl"
 
-  #
-  # Data Collectors
-  #
-  prometheus:
-    container_name: prometheus
-    image: 'prom/prometheus:latest'
-    networks:
-      - default
-      - traefik
-    labels:
-      - 'traefik.http.routers.prometheus.rule=HostRegexp(`prometheus.{domain:.*}`)'
-      - 'traefik.http.routers.prometheus.entrypoints=https'
-      - 'traefik.http.routers.prometheus.tls=true'
-      - 'traefik.enable=true'
-      - 'traefik.docker.network=traefik'
-    volumes:
-      - './prometheus/:/etc/prometheus/'
-      - '/share/hhartmann/var/prometheus:/prometheus'
-
-  otel-collector:
-    container_name: otel-collector
-    image: otel/opentelemetry-collector-contrib:latest
-    command: [--config=/otel/otel-collector-config.yaml]
-    env_file:
-      - ./otel/otel-collector.env.crypt
-    networks:
-      default:
-      traefik:
-      hostbridge:
-        ipv4_address: 192.168.3.3
-    volumes:
-      - ./otel:/otel
-      - /svc/var/otel:/var/otel
-    # depends_on:
-    #   - jaeger
-    labels:
-      - 'traefik.http.routers.otel-collector.rule=HostRegexp(`otel-collector.{domain:.*}`)'
-      - 'traefik.http.routers.otel-collector.entrypoints=https'
-      - 'traefik.http.routers.otel-collector.tls=true'
-      - 'traefik.enable=true'
-      - 'traefik.http.services.otel-collector.loadbalancer.server.port=55679' # zpages
-      - 'traefik.docker.network=traefik'
 
   #
   # Data Storage
@@ -103,23 +101,8 @@ services:
         ipv4_address: 192.168.3.4
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
-      - /svc/var/loki:/var/loki
+      - /share/hhartmann/var/loki:/var/loki
 
-  # jaeger:
-  #   image: jaegertracing/all-in-one:1.37
-  #   networks:
-  #     - default
-  #     - traefik
-  #   labels:
-  #     - "traefik.http.routers.jaeger.rule=HostRegexp(`jaeger.{domain:.*}`)"
-  #     - "traefik.http.routers.jaeger.entrypoints=https"
-  #     - "traefik.http.routers.jaeger.tls=true"
-  #     - "traefik.enable=true"
-  #     - "traefik.docker.network=traefik"
-  #     - "traefik.http.services.jaeger.loadbalancer.server.port=16686"
-  #   environment:
-  #     - COLLECTOR_ZIPKIN_HOST_PORT=:9411
-  #     - COLLECTOR_OTLP_ENABLED=true
 
   #
   # Data Visualization

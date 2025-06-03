@@ -11,7 +11,7 @@ services:
     volumes:
       - /:/host/root
       - /share:/share
-      - /svc/var/jupyter/work:/work
+      - /share/hhartmann/var/jupyter/work:/work
       - /svc/mnt/jupyter:/mnt
     labels:
       - "traefik.enable=true"
@@ -28,7 +28,7 @@ services:
     volumes:
       - /:/host/root
       - /share:/share
-      - /svc/var/jupyter/work:/work
+      - /share/hhartmann/var/jupyter/work:/work
       - /svc/mnt/jupyter:/mnt
     labels:
       - "traefik.enable=true"

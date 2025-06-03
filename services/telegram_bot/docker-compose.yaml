@@ -6,6 +6,6 @@ services:
     image: docker.heinrichhartmann.net/telegram_bot:latest
     env_file: env.crypt
     volumes:
-      - /svc/var/paperless/consume/telegram:/work/dl
+      - /share/hhartmann/var/paperless/consume/telegram:/work/dl
       - ./cmd.sh:/cmd.sh
     command: /cmd.sh

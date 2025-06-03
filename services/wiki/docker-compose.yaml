@@ -9,7 +9,7 @@ services:
   wiki:
     image: gollumwiki/gollum:master
     volumes:
-    - /svc/mnt/wiki:/wiki/.git
+    - /mnt/svc/wiki:/wiki/.git
     labels:
     - "traefik.enable=true"
     - "traefik.http.routers.wiki.rule=HostRegexp(`wiki.{domain:.*}`)"
