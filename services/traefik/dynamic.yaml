@@ -1,0 +1,8 @@
+http:
+  routers:
+    traefik-dashboard:
+      rule: "HostRegexp(`^traefik.`)"
+      service: api@internal
+      entryPoints:
+        - web
+  

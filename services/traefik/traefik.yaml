@@ -1,0 +1,16 @@
+# traefik.yaml
+log:
+  level: DEBUG
+
+api:
+  dashboard: true
+entryPoints:
+  web:
+    address: ":80"
+  traefik:
+    address: ":8081"
+providers:
+  docker: {}
+  file:
+    filename: /etc/traefik/dynamic.yaml
+  
