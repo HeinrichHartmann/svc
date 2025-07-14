@@ -1,8 +1,10 @@
 http:
   routers:
     traefik-dashboard:
-      rule: "HostRegexp(`^traefik.`)"
+      rule: "HostRegexp(`^traefik`)"
       service: api@internal
       entryPoints:
         - web
+        - websecure
+      tls: {}
   
