@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  minecraft:
+    image: itzg/minecraft-server:latest
+    container_name: minecraft
+    restart: unless-stopped
+
+    ports:
+      - "25565:25565"
+
+    environment:
+      # EULA acceptance (required)
+      EULA: "TRUE"
+
+      # Server configuration
+      VERSION: "1.21.9"
+      TYPE: "VANILLA"
+
+      # Game settings
+      DIFFICULTY: "peaceful"
+      MODE: "creative"
+      MOTD: "A Minecraft Server"
+      MAX_PLAYERS: 20
+      SPAWN_MONSTERS: "false"
+      SPAWN_PROTECTION: 16
+      VIEW_DISTANCE: 10
+
+      # Performance
+      MEMORY: "1G"
+      JVM_XX_OPTS: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200"
+
+      # Online mode
+      ONLINE_MODE: "true"
+
+      # Disable GUI (required for Docker)
+      GUI: "false"
+
+      # Enable status
+      ENABLE_STATUS: "true"
+
+      # PVP settings
+      PVP: "true"
+
+      # World settings
+      LEVEL_TYPE: "minecraft:normal"
+      GENERATE_STRUCTURES: "true"
+
+    volumes:
+      # Data directory for world saves, config, and server files
+      # Using subdirectory to avoid conflicts with other minecraft files
+      - /svc/var/minecraft/data:/data
+
+      # Mount existing worlds from /share for reference/migration
+      - /share/hhartmann/var/minecraft/worlds:/worlds:ro
+
+    labels:
+      # Traefik is not used for Minecraft (TCP protocol on port 25565)
+      # Minecraft clients connect directly to port 25565
+      - "traefik.enable=false"
+
+    networks:
+      - default
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "mc-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  minecraft-admin:
+    build:
+      context: ./src/admin
+    container_name: minecraft-admin
+    restart: unless-stopped
+
+    environment:
+      MINECRAFT_CONTAINER: "minecraft"
+      DATA_DIR: "/data"
+      WORLDS_DIR: "/worlds"
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /svc/var/minecraft/data:/data
+      - /share/hhartmann/var/minecraft/worlds:/worlds:ro
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      # Main admin interface (no auth)
+      - "traefik.http.routers.minecraft-admin.rule=HostRegexp(`^minecraft`)"
+      - "traefik.http.routers.minecraft-admin.entrypoints=websecure"
+      - "traefik.http.routers.minecraft-admin.tls=true"
+      - "traefik.http.services.minecraft-admin.loadbalancer.server.port=5000"
+      # Console routes (with auth) - higher priority to match first
+      - "traefik.http.routers.minecraft-console.rule=HostRegexp(`^minecraft`) && PathPrefix(`/console`, `/api/console`)"
+      - "traefik.http.routers.minecraft-console.entrypoints=websecure"
+      - "traefik.http.routers.minecraft-console.tls=true"
+      - "traefik.http.routers.minecraft-console.middlewares=auth@file"
+      - "traefik.http.routers.minecraft-console.service=minecraft-admin"
+      - "traefik.http.routers.minecraft-console.priority=100"
+
+    networks:
+      - default
+      - traefik
+
+    depends_on:
+      - minecraft
+
+networks:
+  default:
+    name: minecraft_network
+  traefik:
+    name: traefik
+    external: true

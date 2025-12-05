@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { margin-bottom: 30px; color: #4CAF50; }
+        .card {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #3a3a3a;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status.running { background: #4CAF50; color: white; }
+        .status.stopped { background: #f44336; color: white; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #2196F3; color: white; }
+        .btn-primary:hover { background: #1976D2; }
+        .btn-success { background: #4CAF50; color: white; }
+        .btn-success:hover { background: #45a049; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-danger:hover { background: #da190b; }
+        .world-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .world-item {
+            background: #333;
+            padding: 15px;
+            border-radius: 6px;
+            border: 2px solid #3a3a3a;
+        }
+        .world-item.active { border-color: #4CAF50; }
+        .world-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
+        .world-info { font-size: 14px; color: #999; margin-bottom: 10px; }
+        .logs {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .controls { display: flex; gap: 10px; margin-top: 15px; }
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .message.success { background: #4CAF50; color: white; }
+        .message.error { background: #f44336; color: white; }
+        .message.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Minecraft Server Admin</h1>
+
+        <div id="message" class="message"></div>
+
+        <!-- Server Status -->
+        <div class="card">
+            <h2>Server Status</h2>
+            <p style="margin-top: 15px;">
+                Status: <span class="status {{ 'running' if status.running else 'stopped' }}">
+                    {{ status.status.upper() }}
+                </span>
+            </p>
+            <p style="margin-top: 10px; color: #999;">
+                Current World: <strong>{{ current_world }}</strong>
+            </p>
+            <div class="controls">
+                <button class="btn btn-success" onclick="serverAction('start')">Start</button>
+                <button class="btn btn-danger" onclick="serverAction('stop')">Stop</button>
+                <button class="btn btn-primary" onclick="serverAction('restart')">Restart</button>
+                <button class="btn btn-primary" onclick="refreshLogs()" style="margin-left: auto;">Refresh Logs</button>
+            </div>
+        </div>
+
+        <!-- World Upload -->
+        <div class="card">
+            <h2>Upload World</h2>
+            <div id="dropZone" style="border: 2px dashed #4CAF50; border-radius: 8px; padding: 40px; text-align: center; cursor: pointer; background: #333; margin-top: 15px;">
+                <p style="font-size: 18px; margin-bottom: 10px;">📦 Drag & Drop World ZIP File Here</p>
+                <p style="color: #999; font-size: 14px;">or click to select file</p>
+                <input type="file" id="fileInput" accept=".zip" style="display: none;">
+            </div>
+        </div>
+
+        <!-- World Selection -->
+        <div class="card">
+            <h2>Available Worlds</h2>
+            <div class="world-list">
+                {% for world in worlds %}
+                <div class="world-item {{ 'active' if world.is_active else '' }}">
+                    <div class="world-name">{{ world.name }}</div>
+                    <div class="world-info">Size: {{ world.size_mb }} MB</div>
+                    {% if world.is_active %}
+                    <button class="btn btn-success" disabled>Active</button>
+                    {% else %}
+                    <button class="btn btn-primary" onclick="switchWorld('{{ world.name }}')">
+                        Switch & Restart
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="card">
+            <h2>Server Logs</h2>
+            <div id="logs" class="logs">Loading logs...</div>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(text, type = 'success') {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type} show`;
+            setTimeout(() => msg.classList.remove('show'), 5000);
+        }
+
+        async function serverAction(action) {
+            try {
+                const response = await fetch(`/api/server/${action}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showMessage(data.detail || 'Action failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function switchWorld(worldName) {
+            if (!confirm(`Switch to world "${worldName}" and restart the server?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/world/switch/${worldName}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 3000);
+                } else {
+                    showMessage(data.detail || 'Failed to switch world', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        }
+
+        async function refreshLogs() {
+            try {
+                const response = await fetch('/api/logs?lines=100');
+                const data = await response.json();
+                document.getElementById('logs').textContent = data.logs.join('\n');
+            } catch (error) {
+                document.getElementById('logs').textContent = 'Error loading logs: ' + error.message;
+            }
+        }
+
+        // Load logs on page load
+        refreshLogs();
+
+        // Auto-refresh logs every 5 seconds
+        setInterval(refreshLogs, 5000);
+
+        // Drag and drop functionality
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#45a049';
+            dropZone.style.background = '#2a4a2a';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#4CAF50';
+            dropZone.style.background = '#333';
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#4CAF50';
+            dropZone.style.background = '#333';
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                await uploadWorld(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            if (e.target.files.length > 0) {
+                await uploadWorld(e.target.files[0]);
+            }
+        });
+
+        async function uploadWorld(file) {
+            if (!file.name.endsWith('.zip')) {
+                showMessage('Please upload a ZIP file', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                dropZone.innerHTML = '<p>⏳ Uploading...</p>';
+                const response = await fetch('/api/world/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    showMessage(data.detail || 'Upload failed', 'error');
+                    dropZone.innerHTML = '<p style="font-size: 18px; margin-bottom: 10px;">📦 Drag & Drop World ZIP File Here</p><p style="color: #999; font-size: 14px;">or click to select file</p>';
+                }
+            } catch (error) {
+                showMessage('Upload error: ' + error.message, 'error');
+                dropZone.innerHTML = '<p style="font-size: 18px; margin-bottom: 10px;">📦 Drag & Drop World ZIP File Here</p><p style="color: #999; font-size: 14px;">or click to select file</p>';
+            }
+        }
+    </script>
+</body>
+</html>
