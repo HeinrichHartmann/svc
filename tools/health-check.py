@@ -285,7 +285,7 @@ def get_zfs_auto_snapshot_status():
     # Check systemd timers
     timers_status = {}
     for interval in ['daily', 'weekly', 'monthly']:
-        timer = f"zfs-auto-snapshot-{interval}.timer"
+        timer = f"zfs-snapshot-{interval}.timer"
         timer_output, timer_ret = run_cmd(f"systemctl is-active {timer} 2>/dev/null")
         timers_status[interval] = timer_output.strip() == "active"
 

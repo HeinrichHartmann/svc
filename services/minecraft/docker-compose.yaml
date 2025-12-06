@@ -5,6 +5,7 @@ services:
     image: itzg/minecraft-server:latest
     container_name: minecraft
     restart: unless-stopped
+    entrypoint: /entrypoint.sh
 
     ports:
       - "25565:25565"
@@ -31,7 +32,7 @@ services:
       JVM_XX_OPTS: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200"
 
       # Online mode - set to false to allow offline/cracked clients
-      ONLINE_MODE: "true"
+      ONLINE_MODE: "false"
 
       # Disable GUI (required for Docker)
       GUI: "false"
@@ -47,12 +48,11 @@ services:
       GENERATE_STRUCTURES: "true"
 
     volumes:
-      # Data directory for world saves, config, and server files
-      # Using subdirectory to avoid conflicts with other minecraft files
-      - /svc/var/minecraft/data:/data
+      # World data repository (contains 'active' symlink, 'worlds/' directory, and server config)
+      - /share/hhartmann/var/minecraft:/data
 
-      # Mount existing worlds from /share for reference/migration
-      - /share/hhartmann/var/minecraft/worlds:/worlds:ro
+      # Custom entrypoint script
+      - ./entrypoint.sh:/entrypoint.sh:ro
 
     labels:
       # Traefik is not used for Minecraft (TCP protocol on port 25565)
@@ -83,8 +83,7 @@ services:
 
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /svc/var/minecraft/data:/data
-      - /share/hhartmann/var/minecraft/worlds:/worlds:ro
+      - /share/hhartmann/var/minecraft:/data
 
     labels:
       - "traefik.enable=true"

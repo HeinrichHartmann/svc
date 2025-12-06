@@ -6,8 +6,9 @@ FastAPI-based web UI for managing Minecraft worlds and server.
 
 import os
 import shutil
+import time
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import docker
 from fastapi import FastAPI, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -18,8 +19,8 @@ from fastapi.templating import Jinja2Templates
 # Configuration
 MINECRAFT_CONTAINER = os.getenv("MINECRAFT_CONTAINER", "minecraft")
 DATA_DIR = Path(os.getenv("DATA_DIR", "/data"))
-WORLDS_DIR = Path(os.getenv("WORLDS_DIR", "/worlds"))
-ACTIVE_WORLD_PATH = DATA_DIR / "world"
+WORLDS_DIR = DATA_DIR / "worlds"  # Worlds are now in /data/worlds
+ACTIVE_SYMLINK = DATA_DIR / "active"  # Symlink to active world
 
 # Initialize FastAPI
 app = FastAPI(title="Minecraft Admin", version="0.1.0")
@@ -29,6 +30,11 @@ templates = Jinja2Templates(directory="templates")
 
 # Docker client
 docker_client = docker.from_env()
+
+# Status cache (to avoid hammering RCON)
+_status_cache: Optional[Dict[str, Any]] = None
+_status_cache_time: float = 0
+STATUS_CACHE_TTL = 5  # seconds
 
 
 # Helper functions
@@ -56,29 +62,27 @@ def get_available_worlds() -> List[Dict[str, Any]]:
 
 def is_active_world(world_name: str) -> bool:
     """Check if a world is currently active."""
-    if not ACTIVE_WORLD_PATH.exists():
+    if not ACTIVE_SYMLINK.exists():
         return False
 
-    # Check if it's a symlink pointing to the world
-    if ACTIVE_WORLD_PATH.is_symlink():
-        target = ACTIVE_WORLD_PATH.resolve()
-        return target.name == world_name
-
-    # Otherwise check directory name match (after copy)
-    # We'll store a marker file
-    marker = ACTIVE_WORLD_PATH / ".world_source"
-    if marker.exists():
-        return marker.read_text().strip() == world_name
+    # Check if symlink points to this world
+    if ACTIVE_SYMLINK.is_symlink():
+        target = os.readlink(ACTIVE_SYMLINK)
+        # target is relative: "worlds/WorldName"
+        return target == f"worlds/{world_name}"
 
     return False
 
 
 def get_current_world() -> str:
     """Get the name of the currently active world."""
-    marker = ACTIVE_WORLD_PATH / ".world_source"
-    if marker.exists():
-        return marker.read_text().strip()
-    return "world (default)"
+    if ACTIVE_SYMLINK.is_symlink():
+        target = os.readlink(ACTIVE_SYMLINK)
+        # target is "worlds/WorldName"
+        if "/" in target:
+            return target.split("/")[-1]
+        return target
+    return "none"
 
 
 def get_container_status() -> Dict[str, Any]:
@@ -117,22 +121,33 @@ def get_container_logs(lines: int = 100) -> List[str]:
         return [f"Error fetching logs: {str(e)}"]
 
 
-def get_online_players() -> List[str]:
-    """Get list of currently online players."""
+def get_online_players() -> tuple[List[str], Optional[str]]:
+    """Get list of currently online players. Returns (players, error)."""
     try:
         container = docker_client.containers.get(MINECRAFT_CONTAINER)
-        result = container.exec_run("rcon-cli list")
+
+        # Check if container is actually running
+        if container.status != "running":
+            return ([], "Server not running")
+
+        result = container.exec_run("rcon-cli list", demux=False)
         output = result.output.decode('utf-8').strip()
+
+        # Check for RCON connection errors
+        if "Failed to connect" in output or "connection refused" in output:
+            return ([], "RCON not ready (server starting up)")
 
         # Parse output like "There are 3 of a max of 20 players online: Player1, Player2, Player3"
         if ":" in output:
             player_part = output.split(":", 1)[1].strip()
             if player_part:
-                return [p.strip() for p in player_part.split(",")]
+                return ([p.strip() for p in player_part.split(",")], None)
 
-        return []
+        return ([], None)
+    except docker.errors.NotFound:
+        return ([], "Container not found")
     except Exception as e:
-        return []
+        return ([], f"Error: {str(e)}")
 
 
 def switch_world(world_name: str) -> bool:
@@ -147,16 +162,15 @@ def switch_world(world_name: str) -> bool:
         container = docker_client.containers.get(MINECRAFT_CONTAINER)
         container.stop(timeout=30)
 
-        # Remove old world
-        if ACTIVE_WORLD_PATH.exists():
-            shutil.rmtree(ACTIVE_WORLD_PATH)
+        # Update symlink to point to new world
+        symlink_target = f"worlds/{world_name}"
 
-        # Copy new world
-        shutil.copytree(world_source, ACTIVE_WORLD_PATH)
+        # Remove old symlink if exists
+        if ACTIVE_SYMLINK.exists() or ACTIVE_SYMLINK.is_symlink():
+            ACTIVE_SYMLINK.unlink()
 
-        # Mark which world is active
-        marker = ACTIVE_WORLD_PATH / ".world_source"
-        marker.write_text(world_name)
+        # Create new symlink
+        ACTIVE_SYMLINK.symlink_to(symlink_target)
 
         # Start the server
         container.start()
@@ -169,12 +183,32 @@ def switch_world(world_name: str) -> bool:
 # API Routes
 @app.get("/api/status")
 async def api_status():
-    """Get server status."""
-    return {
-        "container": get_container_status(),
+    """Get server status with caching to avoid hammering RCON."""
+    global _status_cache, _status_cache_time
+
+    now = time.time()
+
+    # Return cached status if still fresh
+    if _status_cache and (now - _status_cache_time) < STATUS_CACHE_TTL:
+        return _status_cache
+
+    # Fetch fresh status
+    container = get_container_status()
+    players, players_error = get_online_players()
+
+    status = {
+        "container": container,
         "current_world": get_current_world(),
-        "online_players": get_online_players(),
+        "online_players": players,
+        "players_error": players_error,
+        "cached_at": int(now),
     }
+
+    # Update cache
+    _status_cache = status
+    _status_cache_time = now
+
+    return status
 
 
 @app.get("/api/worlds")
@@ -239,12 +273,14 @@ async def api_logs(lines: int = 100):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Main admin interface."""
+    players, players_error = get_online_players()
     return templates.TemplateResponse("index.html", {
         "request": request,
         "worlds": get_available_worlds(),
         "current_world": get_current_world(),
         "status": get_container_status(),
-        "online_players": get_online_players(),
+        "online_players": players,
+        "players_error": players_error,
     })
 
 

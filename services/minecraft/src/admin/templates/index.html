@@ -93,20 +93,27 @@
         <div class="card">
             <h2>Server Status</h2>
             <p style="margin-top: 15px;">
-                Status: <span class="status {{ 'running' if status.running else 'stopped' }}">
+                Status: <span id="statusBadge" class="status {{ 'running' if status.running else 'stopped' }}">
                     {{ status.status.upper() }}
                 </span>
             </p>
             <p style="margin-top: 10px; color: #999;">
-                Current World: <strong>{{ current_world }}</strong>
+                Current World: <strong id="currentWorld">{{ current_world }}</strong>
             </p>
             <p style="margin-top: 10px; color: #999;">
-                Online Players ({{ online_players|length }}):
-                {% if online_players %}
-                    <strong>{{ online_players|join(', ') }}</strong>
-                {% else %}
-                    <span style="color: #666;">No players online</span>
-                {% endif %}
+                Online Players (<span id="playerCount">{{ online_players|length }}</span>):
+                <span id="playerList">
+                    {% if online_players %}
+                        <strong>{{ online_players|join(', ') }}</strong>
+                    {% elif players_error %}
+                        <span style="color: #ff9800;">{{ players_error }}</span>
+                    {% else %}
+                        <span style="color: #666;">No players online</span>
+                    {% endif %}
+                </span>
+            </p>
+            <p style="margin-top: 10px; color: #666; font-size: 12px;">
+                <span id="lastUpdate">Auto-refreshing...</span>
             </p>
             <div class="controls">
                 <button class="btn btn-success" onclick="serverAction('start')">Start</button>
@@ -216,6 +223,49 @@
 
         // Auto-refresh logs every 5 seconds
         setInterval(refreshLogs, 5000);
+
+        // Auto-refresh status every 10 seconds
+        async function refreshStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                // Update status badge
+                const statusBadge = document.getElementById('statusBadge');
+                statusBadge.textContent = data.container.status.toUpperCase();
+                statusBadge.className = `status ${data.container.running ? 'running' : 'stopped'}`;
+
+                // Update current world
+                document.getElementById('currentWorld').textContent = data.current_world;
+
+                // Update player count and list
+                document.getElementById('playerCount').textContent = data.online_players.length;
+
+                const playerList = document.getElementById('playerList');
+                if (data.online_players.length > 0) {
+                    playerList.innerHTML = `<strong>${data.online_players.join(', ')}</strong>`;
+                } else if (data.players_error) {
+                    playerList.innerHTML = `<span style="color: #ff9800;">${data.players_error}</span>`;
+                } else {
+                    playerList.innerHTML = '<span style="color: #666;">No players online</span>';
+                }
+
+                // Update last refresh time
+                const now = new Date();
+                document.getElementById('lastUpdate').textContent =
+                    `Last updated: ${now.toLocaleTimeString()}`;
+            } catch (error) {
+                console.error('Status refresh error:', error);
+                document.getElementById('lastUpdate').textContent =
+                    `Error refreshing status: ${error.message}`;
+            }
+        }
+
+        // Initial status refresh
+        refreshStatus();
+
+        // Poll status every 10 seconds
+        setInterval(refreshStatus, 10000);
 
         // Drag and drop functionality
         const dropZone = document.getElementById('dropZone');
