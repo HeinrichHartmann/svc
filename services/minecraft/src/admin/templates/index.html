@@ -100,6 +100,14 @@
             <p style="margin-top: 10px; color: #999;">
                 Current World: <strong>{{ current_world }}</strong>
             </p>
+            <p style="margin-top: 10px; color: #999;">
+                Online Players ({{ online_players|length }}):
+                {% if online_players %}
+                    <strong>{{ online_players|join(', ') }}</strong>
+                {% else %}
+                    <span style="color: #666;">No players online</span>
+                {% endif %}
+            </p>
             <div class="controls">
                 <button class="btn btn-success" onclick="serverAction('start')">Start</button>
                 <button class="btn btn-danger" onclick="serverAction('stop')">Stop</button>

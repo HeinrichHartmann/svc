@@ -117,6 +117,24 @@ def get_container_logs(lines: int = 100) -> List[str]:
         return [f"Error fetching logs: {str(e)}"]
 
 
+def get_online_players() -> List[str]:
+    """Get list of currently online players."""
+    try:
+        container = docker_client.containers.get(MINECRAFT_CONTAINER)
+        result = container.exec_run("rcon-cli list")
+        output = result.output.decode('utf-8').strip()
+
+        # Parse output like "There are 3 of a max of 20 players online: Player1, Player2, Player3"
+        if ":" in output:
+            player_part = output.split(":", 1)[1].strip()
+            if player_part:
+                return [p.strip() for p in player_part.split(",")]
+
+        return []
+    except Exception as e:
+        return []
+
+
 def switch_world(world_name: str) -> bool:
     """Switch to a different world and restart the server."""
     world_source = WORLDS_DIR / world_name
@@ -155,6 +173,7 @@ async def api_status():
     return {
         "container": get_container_status(),
         "current_world": get_current_world(),
+        "online_players": get_online_players(),
     }
 
 
@@ -225,6 +244,7 @@ async def index(request: Request):
         "worlds": get_available_worlds(),
         "current_world": get_current_world(),
         "status": get_container_status(),
+        "online_players": get_online_players(),
     })
 
 
