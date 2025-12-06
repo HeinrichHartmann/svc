@@ -30,7 +30,7 @@ services:
       MEMORY: "1G"
       JVM_XX_OPTS: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200"
 
-      # Online mode
+      # Online mode - set to false to allow offline/cracked clients
       ONLINE_MODE: "true"
 
       # Disable GUI (required for Docker)

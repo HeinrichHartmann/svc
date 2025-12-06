@@ -1,0 +1,3 @@
+[submodule "services/video/src"]
+	path = services/video/src
+	url = https://github.com/HeinrichHartmann/pile-video
