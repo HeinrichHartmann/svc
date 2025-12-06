@@ -19,16 +19,17 @@
 
 [log]
   format = "common"
-  level = "INFO"
+  # level = "INFO"
   # level = "DEBUG"
+  level = "TRACE"
 
-#[accessLog]
-#  format = "json"
+[accessLog]
+  format = "common"
 
 [api]
   debug = true
   insecure = true
-  # dashboard = false
+  dashboard = true
 
 [ping]
   entryPoint = "traefik" # :8080
@@ -43,9 +44,9 @@
   directory = "/conf"
   watch = true
 
-[tracing]
-  [tracing.jaeger.collector]
-    endpoint = "http://otel-collector:14268/api/traces?format=jaeger.thrift"
+#[tracing]
+#  [tracing.jaeger.collector]
+#    endpoint = "http://otel-collector:14268/api/traces?format=jaeger.thrift"
 
 [metrics]
   [metrics.prometheus]

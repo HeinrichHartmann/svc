@@ -9,27 +9,25 @@ services:
     ports:
       - 80:80 # http
       - 443:443 # https
-      - 8080:8080 # ping?
-      - 8082:8082 # metrics
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik.toml:/etc/traefik/traefik.toml
-      - ./conf:/conf
+      - ./traefik.yaml:/etc/traefik/traefik.yaml
+      - ./dynamic.yaml:/etc/traefik/dynamic.yaml
       - /share/hhartmann/var/letsencrypt:/var/letsencrypt
-
-  traefik-forward-auth:
-    image: thomseddon/traefik-forward-auth:2
-    env_file:
-      ./env-auth-forward.crypt
-    labels:
-      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
-      - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
-      - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181"
 
   whoami:
     image: traefik/whoami
     labels:
-      - 'traefik.http.routers.whoami.rule=HostRegexp(`whoami.{domain:.*}`)'
-      - 'traefik.http.routers.whoami.entrypoints=https'
+      - 'traefik.http.routers.whoami.rule=HostRegexp(`^whoami`)'
+      - 'traefik.http.routers.whoami.entrypoints=websecure'
       - 'traefik.http.routers.whoami.tls=true'
       - 'traefik.enable=true'
+
+  # traefik-forward-auth:
+  #   image: thomseddon/traefik-forward-auth:2
+  #   env_file:
+  #     ./env-auth-forward.crypt
+  #   labels:
+  #     - "traefik.http.middlewares.traefik-forward-auth.forwardauth.address=http://traefik-forward-auth:4181"
+  #     - "traefik.http.middlewares.traefik-forward-auth.forwardauth.authResponseHeaders=X-Forwarded-User"
+  #     - "traefik.http.services.traefik-forward-auth.loadbalancer.server.port=4181"

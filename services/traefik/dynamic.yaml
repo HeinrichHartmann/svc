@@ -8,3 +8,7 @@ http:
         - websecure
       tls: {}
   
+tls:
+  certificates:
+    - certFile: "/var/letsencrypt/config/live/heinrichhartmann.net/fullchain.pem"
+      keyFile: "/var/letsencrypt/config/live/heinrichhartmann.net/privkey.pem"

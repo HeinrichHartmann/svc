@@ -18,30 +18,4 @@
   entryPoints = ["https","traefik"]
   tls = true
   rule = "HostRegexp(`traefik.{domain:.*}`)"
-  service = "api@internal"
-
-[http.routers.router-1]
-  entryPoints = ["https"]
-  rule = "HostRegexp(`zigbee.{domain:.*}`)"
-  service = "service-1"
-  tls = true
-
-
-[http.services]
-[http.services.service-1.loadBalancer]
-[[http.services.service-1.loadBalancer.servers]]
-  url = "http://100.97.166.55:8080/"
-[http.services.service-1.loadBalancer.healthCheck]
-  path = "/"
-  interval = "10s"
-  timeout = "3s"
-
-[http.routers.nix]
-  entryPoints = ["https","traefik"]
-  tls = true
-  rule = "HostRegexp(`nix.{domain:.*}`)"
-  service = "nix"
-
-[http.services.nix.loadBalancer]
-[[http.services.nix.loadBalancer.servers]]
-  url = "http://192.168.2.12:9090/"
+  service = "dashboard@internal"
