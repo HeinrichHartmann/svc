@@ -17,6 +17,6 @@ services:
       - /share/hhartmann/attic/Books:/books/attic:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.calibre.rule=HostRegexp(`books.{domain:.*}`)"
-      - "traefik.http.routers.calibre.entrypoints=https"
+      - "traefik.http.routers.calibre.rule=HostRegexp(`^books.`)"
+      - "traefik.http.routers.calibre.entrypoints=websecure"
       - "traefik.http.routers.calibre.tls=true"

@@ -8,6 +8,7 @@ networks:
 services:
   mariadb:
     image: mariadb:10.8
+    restart: unless-stopped
     security_opt: # see https://github.com/MariaDB/mariadb-docker/issues/434#issuecomment-1136151239
       - seccomp:unconfined
       - apparmor:unconfined
@@ -24,6 +25,7 @@ services:
 
   photoprism:
     image: photoprism/photoprism:latest
+    restart: unless-stopped
     depends_on:
       - mariadb
     links:
@@ -33,8 +35,8 @@ services:
       - apparmor:unconfined
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.prism.rule=HostRegexp(`prism.{domain:.*}`)'
-      - 'traefik.http.routers.prism.entrypoints=https'
+      - 'traefik.http.routers.prism.rule=HostRegexp(`^prism`)'
+      - 'traefik.http.routers.prism.entrypoints=websecure'
       - 'traefik.http.routers.prism.tls=true'
     environment:
       PHOTOPRISM_ADMIN_PASSWORD: "insecure"          # INITIAL PASSWORD FOR "admin" USER, MINIMUM 8 CHARACTERS

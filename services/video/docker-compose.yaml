@@ -8,14 +8,17 @@ networks:
 services:
   video:
     container_name: video
-    image: docker.heinrichhartmann.net/pile-video
+    build:
+      context: ./src
+      dockerfile: Dockerfile
+    image: pile-video:local
     volumes:
       - /share/hhartmann/garage/Videos/:/usr/src/app/videos
       - /share/hhartmann/var/pile-video/Vcache/:/usr/src/app/cache
       - /share/hhartmann/var/pile-video/Vtmp/:/usr/src/app/tmp
       - /share/hhartmann/attic/Music/Video:/usr/src/app/mp3
     labels:
-      - "traefik.http.routers.video.rule=HostRegexp(`video.{domain:.*}`)"
-      - "traefik.http.routers.video.entrypoints=https"
+      - "traefik.http.routers.video.rule=HostRegexp(`^video.`)"
+      - "traefik.http.routers.video.entrypoints=websecure"
       - "traefik.http.routers.video.tls=true"
       - "traefik.enable=true"

@@ -12,7 +12,7 @@ services:
       - /share/hhartmann/attic/www:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     labels:
-      - "traefik.http.routers.www.rule=HostRegexp(`www.{domain:.*}`)"
-      - "traefik.http.routers.www.entrypoints=https"
+      - "traefik.http.routers.www.rule=HostRegexp(`^www`)"
+      - "traefik.http.routers.www.entrypoints=websecure"
       - "traefik.http.routers.www.tls=true"
       - "traefik.enable=true"

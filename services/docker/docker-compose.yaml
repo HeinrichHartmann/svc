@@ -9,8 +9,8 @@ services:
     volumes:
       - /share/hhartmann/var/docker-registry:/var/lib/registry
     labels:
-      - "traefik.http.routers.registry.rule=HostRegexp(`docker.{domain:.*}`)"
-      - "traefik.http.routers.registry.entrypoints=https"
+      - "traefik.http.routers.registry.rule=HostRegexp(`^docker.`)"
+      - "traefik.http.routers.registry.entrypoints=websecure"
       - "traefik.http.routers.registry.tls=true"
       - "traefik.enable=true"
 
@@ -21,7 +21,7 @@ services:
     environment:
       REGISTRY_PROXY_REMOTEURL: https://registry-1.docker.io
     labels:
-      - "traefik.http.routers.dockercache.rule=HostRegexp(`dockercache.{domain:.*}`)"
-      - "traefik.http.routers.dockercache.entrypoints=https"
+      - "traefik.http.routers.dockercache.rule=HostRegexp(`^dockercache.`)"
+      - "traefik.http.routers.dockercache.entrypoints=websecure"
       - "traefik.http.routers.dockercache.tls=true"
       - "traefik.enable=true"
