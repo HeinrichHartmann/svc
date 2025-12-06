@@ -177,3 +177,51 @@ The naming of the datasets is reflecting the different storage tiers, that I use
     This was always a lot more complicated and brittle. Afterseveral episodes of data loss, I gave up on this approach for now.
     I am sure I am able to get this to work well-enough if I invested more time, but right now I this feature is not a priority.
 
+## Command Reference: svc.sh
+
+The `svc.sh` tool provides a command-line interface for managing services. It must be run from the `/svc` directory.
+
+### Usage
+
+```bash
+cd /svc
+./svc.sh <command> [service-name]
+```
+
+### Commands
+
+**Service Management:**
+- `./svc.sh enable <service>` - Enable a service (creates symlink in `services.enabled/`)
+- `./svc.sh disable <service>` - Disable a service (removes symlink from `services.enabled/`)
+- `./svc.sh start <service>` - Start a specific service (`make start`)
+- `./svc.sh stop <service>` - Stop a specific service (`make stop`)
+- `./svc.sh restart <service>` - Restart a specific service (`make restart`)
+
+**Service Discovery:**
+- `./svc.sh list` (or `ls`, `list-active`) - List enabled services
+- `./svc.sh list-available` - List all available services in `services/`
+
+**Service Creation:**
+- `./svc.sh new <service>` - Create new service from template
+
+### Examples
+
+```bash
+# Enable the video service to start on boot
+cd /svc && ./svc.sh enable video
+
+# List all enabled services
+cd /svc && ./svc.sh list
+
+# Start a specific service manually
+cd /svc && ./svc.sh start video
+
+# Create a new service from template
+cd /svc && ./svc.sh new myservice
+```
+
+### Notes
+
+- Enabled services are tracked via symlinks in `services.enabled/`
+- Only enabled services are started by `make start` and on system boot
+- The `new` command creates a service from the template in `services/_template/`
