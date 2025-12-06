@@ -278,6 +278,55 @@ labels:
 
 ---
 
-**Last Updated:** 2025-11-30
+## Important Learnings (December 2025)
+
+### System Configuration Location
+- **NixOS configuration is NOT in `/svc`** - It's in `~/box/nix/hosts/qve/`
+- System-level services (ZFS auto-snapshot, systemd timers) are configured via NixOS
+- `/svc` is purely for Docker-based application services
+- After changing NixOS config, run: `sudo nixos-rebuild switch`
+
+### ZFS and Data Protection
+- **Use ZFS filesystems for critical service data** (not just Docker volumes)
+- Enable `com.sun:auto-snapshot=true` on ZFS filesystems for automatic snapshots
+- ZFS auto-snapshot provides: daily (7), weekly (4), monthly (60) snapshots
+- Check snapshot status: `/svc/tools/health-check.py` includes ZFS monitoring
+- Standalone check: `/svc/tools/health-checks/zfs-auto-snapshot-check.sh`
+
+### Minecraft Service Specifics
+- **World data location:** Moved to ZFS at `/share/hhartmann/var/minecraft/`
+- **Container restart = data risk:** Docker compose recreates containers, can trigger world regeneration
+- **Always use bind mounts with correct ownership** - Container runs as uid=1000
+- **Permissions matter:** Files owned by root can cause "AccessDeniedException" errors
+- Fix permissions: `sudo chown -R hhartmann:users /path/to/data`
+
+### Docker Compose Gotchas
+- `docker compose up -d` **recreates containers** when config changes
+- Old containers are automatically removed (no recovery from removed containers)
+- **Always snapshot/backup before config changes** that affect running services
+- Check container logs: `docker logs <container>` to debug startup issues
+
+### File Ownership Issues
+- **macOS extended attributes** (`._*` files) should be cleaned: `find . -name "._*" -delete`
+- Admin interfaces running as root can create files with wrong ownership
+- Web-based world switching tools are **dangerous without backups**
+- Always verify permissions match container user (typically uid=1000)
+
+### Git Workflow
+- This repo has many uncommitted changes from ongoing development
+- When asked to commit, review all changes and group logically
+- Check for stale changes with: `git status` and `git diff --stat`
+- Use descriptive commit messages that explain "why" not just "what"
+
+### Health Monitoring
+- Use `/svc/tools/health-check.py` for system-wide status checks
+- Returns JSON with docker, systemd, ZFS, network, and service status
+- Integrates ZFS auto-snapshot monitoring
+- Exit code 0 = healthy, 1 = issues detected
+- Individual service checks in `/svc/tools/health-checks/`
+
+---
+
+**Last Updated:** 2025-12-06
 **Maintained by:** Heinrich Hartmann
 **Repository:** https://github.com/HeinrichHartmann/svc
