@@ -5,13 +5,8 @@ networks:
     external: true
     name: traefik
   hostbridge:
+    external: true  # Created by NixOS systemd-networkd at boot
     name: "hostbridge"
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 192.168.3.0/24
-          gateway: 192.168.3.1
 
 services:
   #
@@ -27,7 +22,6 @@ services:
       default:
       traefik:
       hostbridge:
-        ipv4_address: 192.168.3.3
     volumes:
       - ./otel:/otel
       - /share/hhartmann/var/otel:/var/otel
@@ -59,6 +53,8 @@ services:
   #
   # Data Sources
   #
+  # node-exporter now runs as NixOS service (see ~/box/nix/hosts/qve/configuration.nix)
+
   speedtest-exporter:
     container_name: speedtest-exporter
     image: miguelndecarvalho/speedtest-exporter
@@ -98,7 +94,6 @@ services:
       default:
       traefik:
       hostbridge:
-        ipv4_address: 192.168.3.4
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
       - /share/hhartmann/var/loki:/var/loki

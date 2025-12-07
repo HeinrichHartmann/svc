@@ -1,22 +1,8 @@
-# Migadu Email Infrastructure
+# Migadu Email Infrastructure for signalsconf.io
 #
-# This file configures email for domains using Migadu service
 # Requires environment variables:
-#   MIGADU_USERNAME - Your Migadu admin email (hhartmann.1729@gmail.com)
+#   MIGADU_USERNAME - Your Migadu admin email
 #   MIGADU_TOKEN - Migadu API token (from ~/box/secrets/migadu.key)
-
-provider "migadu" {
-  # Reads MIGADU_USERNAME and MIGADU_TOKEN from environment
-}
-
-# Temporary data source to discover existing aliases
-data "migadu_aliases" "signals" {
-  domain_name = "signalsconf.io"
-}
-
-# DNS records for Migadu (Route53)
-# TODO: Add MX, SPF, DKIM, DMARC records manually or via module
-# For now, configure these in Migadu admin panel and they'll provide the values
 
 # Mailboxes
 # Gmail will poll these mailboxes via POP3/IMAP
