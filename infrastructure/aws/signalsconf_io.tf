@@ -3,6 +3,9 @@ locals {
   sc_bucketname = "signalsconf.io"
   sc_origin     = aws_s3_bucket_website_configuration.sc_bucket.website_endpoint
 
+  # Mailbox password (read directly from secrets)
+  sc_mailbox_password = file(pathexpand("~/box/secrets/migadu_heinrich.pass"))
+
   # Email aliases that forward to heinrich@signalsconf.io
   sc_heinrich_aliases = toset([
     "chair",
@@ -296,7 +299,7 @@ resource "migadu_mailbox" "signals_heinrich" {
   name        = "Heinrich Hartmann"
   domain_name = local.sc_domain
   local_part  = "heinrich"
-  password    = var.signals_heinrich_password
+  password    = local.sc_mailbox_password
 
   may_send                = true
   may_receive             = true
