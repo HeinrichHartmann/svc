@@ -2,6 +2,16 @@ locals {
   sc_domain     = "signalsconf.io"
   sc_bucketname = "signalsconf.io"
   sc_origin     = aws_s3_bucket_website_configuration.sc_bucket.website_endpoint
+
+  # Email aliases that forward to heinrich@signalsconf.io
+  sc_heinrich_aliases = toset([
+    "chair",
+    "info",
+    "contact",
+    "abuse",
+    "admin",
+    "postmaster",
+  ])
 }
 
 # S3 Bucket for static website hosting
@@ -264,4 +274,42 @@ resource "aws_route53_record" "sc_pop3s" {
   type    = "SRV"
   ttl     = 300
   records = ["0 1 995 pop.migadu.com"]
+}
+
+# ========================================
+# Migadu Mailboxes & Aliases
+# ========================================
+
+# Main mailbox for signalsconf.io
+# Gmail setup (manual):
+#   - Add account in Gmail: Settings → Accounts → Add mail account
+#   - POP3 Server: pop.migadu.com:995 (SSL)
+#   - Username: heinrich@signalsconf.io
+#   - Password: (from ~/box/secrets/migadu_heinrich.pass)
+#
+# Send mail as (manual):
+#   - Gmail → Settings → Accounts → Send mail as
+#   - SMTP: smtp.migadu.com:465 (SSL) or :587 (STARTTLS)
+#   - Username: heinrich@signalsconf.io
+
+resource "migadu_mailbox" "signals_heinrich" {
+  name        = "Heinrich Hartmann"
+  domain_name = local.sc_domain
+  local_part  = "heinrich"
+  password    = var.signals_heinrich_password
+
+  may_send                = true
+  may_receive             = true
+  may_access_imap         = true
+  may_access_pop3         = true
+  may_access_manage_sieve = true
+}
+
+# Aliases - all forward to heinrich@signalsconf.io (which Gmail polls)
+resource "migadu_alias" "signals_heinrich_aliases" {
+  for_each = local.sc_heinrich_aliases
+
+  domain_name  = local.sc_domain
+  local_part   = each.key
+  destinations = ["heinrich@${local.sc_domain}"]
 }
