@@ -196,7 +196,7 @@ resource "aws_route53_record" "sc_dkim_key1" {
   name    = "key1._domainkey.${local.sc_domain}"
   type    = "CNAME"
   ttl     = 300
-  records = ["key1.signalsconf.io._domainkey.migadu.com."]
+  records = ["key1.${local.sc_domain}._domainkey.migadu.com."]
 }
 
 resource "aws_route53_record" "sc_dkim_key2" {
@@ -204,7 +204,7 @@ resource "aws_route53_record" "sc_dkim_key2" {
   name    = "key2._domainkey.${local.sc_domain}"
   type    = "CNAME"
   ttl     = 300
-  records = ["key2.signalsconf.io._domainkey.migadu.com."]
+  records = ["key2.${local.sc_domain}._domainkey.migadu.com."]
 }
 
 resource "aws_route53_record" "sc_dkim_key3" {
@@ -212,7 +212,7 @@ resource "aws_route53_record" "sc_dkim_key3" {
   name    = "key3._domainkey.${local.sc_domain}"
   type    = "CNAME"
   ttl     = 300
-  records = ["key3.signalsconf.io._domainkey.migadu.com."]
+  records = ["key3.${local.sc_domain}._domainkey.migadu.com."]
 }
 
 # DMARC Record (Domain-based Message Authentication)
