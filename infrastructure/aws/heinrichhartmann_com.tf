@@ -2,6 +2,19 @@ locals {
   hh_domain = "heinrichhartmann.com"
   hh_bucketname = "heinrichhartmann.com"
   hh_origin = aws_s3_bucket_website_configuration.hh_bucket.website_endpoint
+
+  # Mailbox password (read directly from secrets)
+  hh_mailbox_password = trimspace(file(pathexpand("~/box/secrets/migadu_heinrich_hh.pass")))
+
+  # Email aliases that forward to heinrich@heinrichhartmann.com
+  hh_heinrich_aliases = toset([
+    "abuse",
+    "admin",
+    "apple",
+    "consulting",
+    "info",
+    "postmaster",
+  ])
 }
 
 resource "aws_s3_bucket" hh_bucket {
@@ -117,4 +130,31 @@ resource aws_route53_record hh_cdn_root_www {
   type = "CNAME"
   records = [ local.hh_domain ]
   ttl = 300
+}
+
+# =============================================================================
+# Migadu Email Configuration (mailboxes/aliases only - DNS switchover later)
+# =============================================================================
+
+# Migadu Mailbox
+resource "migadu_mailbox" "hh_heinrich" {
+  name        = "Heinrich Hartmann"
+  domain_name = local.hh_domain
+  local_part  = "heinrich"
+  password    = local.hh_mailbox_password
+
+  may_send                = true
+  may_receive             = true
+  may_access_imap         = true
+  may_access_pop3         = true
+  may_access_manage_sieve = true
+}
+
+# Aliases
+resource "migadu_alias" "hh_heinrich_aliases" {
+  for_each = local.hh_heinrich_aliases
+
+  domain_name  = local.hh_domain
+  local_part   = each.key
+  destinations = ["heinrich@${local.hh_domain}"]
 } 
