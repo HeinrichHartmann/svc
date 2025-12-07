@@ -161,3 +161,107 @@ resource "aws_route53_record" "sc_www" {
   ttl     = 300
   records = [local.sc_domain]
 }
+
+# ========================================
+# Migadu Email DNS Records
+# ========================================
+
+# TXT Records (Verification + SPF combined)
+resource "aws_route53_record" "sc_txt" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = local.sc_domain
+  type    = "TXT"
+  ttl     = 300
+  records = [
+    "hosted-email-verify=mz3g2xgk",    # Migadu verification
+    "v=spf1 include:spf.migadu.com -all" # SPF policy
+  ]
+}
+
+# MX Records (mail exchange)
+resource "aws_route53_record" "sc_mx" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = local.sc_domain
+  type    = "MX"
+  ttl     = 300
+  records = [
+    "10 aspmx1.migadu.com",
+    "20 aspmx2.migadu.com"
+  ]
+}
+
+# DKIM Keys (3 keys for rotation)
+resource "aws_route53_record" "sc_dkim_key1" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "key1._domainkey.${local.sc_domain}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["key1.signalsconf.io._domainkey.migadu.com."]
+}
+
+resource "aws_route53_record" "sc_dkim_key2" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "key2._domainkey.${local.sc_domain}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["key2.signalsconf.io._domainkey.migadu.com."]
+}
+
+resource "aws_route53_record" "sc_dkim_key3" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "key3._domainkey.${local.sc_domain}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["key3.signalsconf.io._domainkey.migadu.com."]
+}
+
+# DMARC Record (Domain-based Message Authentication)
+resource "aws_route53_record" "sc_dmarc" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "_dmarc.${local.sc_domain}"
+  type    = "TXT"
+  ttl     = 300
+  records = ["v=DMARC1; p=quarantine;"]
+}
+
+# Autoconfig for Thunderbird (optional but helpful)
+resource "aws_route53_record" "sc_autoconfig" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "autoconfig.${local.sc_domain}"
+  type    = "CNAME"
+  ttl     = 300
+  records = ["autoconfig.migadu.com."]
+}
+
+# SRV Records for autodiscovery (optional but helpful)
+resource "aws_route53_record" "sc_autodiscover" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "_autodiscover._tcp.${local.sc_domain}"
+  type    = "SRV"
+  ttl     = 300
+  records = ["0 1 443 autodiscover.migadu.com"]
+}
+
+resource "aws_route53_record" "sc_submissions" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "_submissions._tcp.${local.sc_domain}"
+  type    = "SRV"
+  ttl     = 300
+  records = ["0 1 465 smtp.migadu.com"]
+}
+
+resource "aws_route53_record" "sc_imaps" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "_imaps._tcp.${local.sc_domain}"
+  type    = "SRV"
+  ttl     = 300
+  records = ["0 1 993 imap.migadu.com"]
+}
+
+resource "aws_route53_record" "sc_pop3s" {
+  zone_id = aws_route53_zone.sc_zone.zone_id
+  name    = "_pop3s._tcp.${local.sc_domain}"
+  type    = "SRV"
+  ttl     = 300
+  records = ["0 1 995 pop.migadu.com"]
+}

@@ -2,7 +2,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.0"
+      version = "~> 5.0"
+    }
+    migadu = {
+      source  = "metio/migadu"
+      version = "~> 2025.10"
     }
   }
 }
