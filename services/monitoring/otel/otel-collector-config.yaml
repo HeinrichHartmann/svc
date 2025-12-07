@@ -5,11 +5,13 @@ extensions:
     endpoint: 0.0.0.0:55679
 
 receivers:
-  # Receivers are available at 192.168.3.3
+  # Receivers are available at 10.100.0.3
   otlp:
     protocols:
-      grpc: # port 4317
-      http: # port 4318
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
 
   # Used by treafik
   jaeger:
@@ -31,8 +33,32 @@ receivers:
       http:
         endpoint: 0.0.0.0:3100
 
+  # Scrape node-exporter metrics from local host
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'nodeexp'
+          scrape_interval: 15s
+          scrape_timeout: 14s
+          static_configs:
+            - targets: ['10.100.0.1:9100']  # Host network via hostbridge gateway
+
 processors:
   batch:
+
+  # Add resource attributes to node_exporter metrics for Dash0
+  resource/node_exporter:
+    attributes:
+      - key: host.name
+        value: qve
+        action: upsert
+      - key: service.name
+        value: qve-host
+        action: upsert
+      - key: deployment.environment
+        value: homelab
+        action: upsert
+
   attributes/fluent_docker:
     actions:
       - action: upsert
@@ -67,17 +93,24 @@ connectors:
   datadog/connector:
 
 exporters:
+  # debug:  # Disabled - wasteful log spam
+  #   verbosity: detailed
+
   file:
     path: /var/otel/otel-collector.log
     flush_interval: 1s
 
-  # send to local loki/Grafana
-  loki:
-    endpoint: "http://192.168.3.4:3100/loki/api/v1/push"
+  # send to local loki/Grafana - DISABLED: loki exporter not available in image
+  # loki:
+  #   endpoint: "http://192.168.3.4:3100/loki/api/v1/push"
 
 
   prometheus:
     endpoint: 0.0.0.0:1234
+
+  # Expose scraped metrics for local inspection
+  prometheus/scrapedata:
+    endpoint: 0.0.0.0:8889
 
   otlp/dash0:
     endpoint: "ingress.eu-west-1.aws.dash0.com:4317"
@@ -112,18 +145,21 @@ service:
 
     logs/forward:
       receivers: [forward]
-      exporters: [
-        count, loki
-      ]
+      exporters: [count]
 
     traces/jaeger:
       receivers: [jaeger]
       processors: [batch]
-      exporters: [count]
+      exporters: [otlp/dash0]
     traces/otlp:
       receivers: [otlp]
       processors: [batch]
-      exporters: [count]
+      exporters: [otlp/dash0]
+
+    metrics/prometheus:
+      receivers: [prometheus]
+      processors: [batch, resource/node_exporter]
+      exporters: [otlp/dash0, prometheus/scrapedata]
     metrics/count:
       receivers: [count]
       exporters: [prometheus]
