@@ -133,8 +133,57 @@ resource aws_route53_record hh_cdn_root_www {
 }
 
 # =============================================================================
-# Migadu Email Configuration (mailboxes/aliases only - DNS switchover later)
+# Migadu Email Configuration
 # =============================================================================
+
+# Verification TXT Record
+resource "aws_route53_record" "hh_migadu_verify" {
+  zone_id = aws_route53_zone.hh_zone.zone_id
+  name    = local.hh_domain
+  type    = "TXT"
+  ttl     = 3600
+  records = [
+    "hosted-email-verify=gvtifrzo",
+    "v=spf1 include:spf.migadu.com -all",
+  ]
+}
+
+# MX Records
+resource "aws_route53_record" "hh_mx" {
+  zone_id = aws_route53_zone.hh_zone.zone_id
+  name    = local.hh_domain
+  type    = "MX"
+  ttl     = 3600
+  records = [
+    "10 aspmx1.migadu.com",
+    "20 aspmx2.migadu.com",
+  ]
+}
+
+# DKIM Records (3 rotating keys)
+resource "aws_route53_record" "hh_dkim_1" {
+  zone_id = aws_route53_zone.hh_zone.zone_id
+  name    = "key1._domainkey.${local.hh_domain}"
+  type    = "CNAME"
+  ttl     = 3600
+  records = ["key1.${local.hh_domain}._domainkey.migadu.com."]
+}
+
+resource "aws_route53_record" "hh_dkim_2" {
+  zone_id = aws_route53_zone.hh_zone.zone_id
+  name    = "key2._domainkey.${local.hh_domain}"
+  type    = "CNAME"
+  ttl     = 3600
+  records = ["key2.${local.hh_domain}._domainkey.migadu.com."]
+}
+
+resource "aws_route53_record" "hh_dkim_3" {
+  zone_id = aws_route53_zone.hh_zone.zone_id
+  name    = "key3._domainkey.${local.hh_domain}"
+  type    = "CNAME"
+  ttl     = 3600
+  records = ["key3.${local.hh_domain}._domainkey.migadu.com."]
+}
 
 # Migadu Mailbox
 resource "migadu_mailbox" "hh_heinrich" {
