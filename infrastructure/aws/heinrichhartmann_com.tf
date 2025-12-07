@@ -143,7 +143,7 @@ resource "aws_route53_record" "hh_migadu_verify" {
   type    = "TXT"
   ttl     = 3600
   records = [
-    "hosted-email-verify=gvtifrzo",
+    "hosted-email-verify=nqp0aks6",
     "v=spf1 include:spf.migadu.com -all",
   ]
 }
