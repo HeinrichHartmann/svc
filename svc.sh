@@ -42,17 +42,17 @@ do
             ;;
         "start")
             set -x # echo commands
-            cd ./services/$1 && make start
+            cd ./services/$1 && direnv exec . make start
             break
             ;;
         "stop")
             set -x # echo commands
-            cd ./services/$1 && make stop
+            cd ./services/$1 && direnv exec . make stop
             break
             ;;
         "restart")
             set -x # echo commands
-            cd ./services/$1 && make restart
+            cd ./services/$1 && direnv exec . make restart
             break
             ;;
         *)

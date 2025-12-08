@@ -60,6 +60,29 @@
         .world-item.active { border-color: #4CAF50; }
         .world-name { font-size: 18px; font-weight: bold; margin-bottom: 8px; }
         .world-info { font-size: 14px; color: #999; margin-bottom: 10px; }
+        .player-list { margin-top: 15px; }
+        .player-item {
+            background: #333;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .player-name { font-size: 16px; font-weight: bold; min-width: 150px; }
+        .player-mode { font-size: 14px; color: #999; }
+        .gamemode-buttons { display: flex; gap: 5px; flex-wrap: wrap; }
+        .gamemode-buttons .btn { padding: 6px 12px; font-size: 12px; }
+        .btn-gamemode { background: #555; color: #ccc; }
+        .btn-gamemode:hover { background: #666; }
+        .btn-gamemode.active { background: #4CAF50; color: white; }
+        .btn-gamemode.survival { border-left: 3px solid #8BC34A; }
+        .btn-gamemode.creative { border-left: 3px solid #FF9800; }
+        .btn-gamemode.adventure { border-left: 3px solid #2196F3; }
+        .btn-gamemode.spectator { border-left: 3px solid #9C27B0; }
         .logs {
             background: #000;
             padding: 15px;
@@ -120,6 +143,14 @@
                 <button class="btn btn-danger" onclick="serverAction('stop')">Stop</button>
                 <button class="btn btn-primary" onclick="serverAction('restart')">Restart</button>
                 <button class="btn btn-primary" onclick="refreshLogs()" style="margin-left: auto;">Refresh Logs</button>
+            </div>
+        </div>
+
+        <!-- Online Players -->
+        <div class="card">
+            <h2>Online Players</h2>
+            <div id="playersSection" class="player-list">
+                <p style="color: #666;">Loading players...</p>
             </div>
         </div>
 
@@ -266,6 +297,72 @@
 
         // Poll status every 10 seconds
         setInterval(refreshStatus, 10000);
+
+        // Fetch and display players with game modes
+        async function refreshPlayers() {
+            try {
+                const response = await fetch('/api/players');
+                const data = await response.json();
+                const section = document.getElementById('playersSection');
+
+                if (data.error) {
+                    section.innerHTML = `<p style="color: #ff9800;">${data.error}</p>`;
+                    return;
+                }
+
+                if (data.players.length === 0) {
+                    section.innerHTML = '<p style="color: #666;">No players online</p>';
+                    return;
+                }
+
+                const gamemodes = ['survival', 'creative', 'adventure', 'spectator'];
+                section.innerHTML = data.players.map(player => `
+                    <div class="player-item" data-player="${player.name}">
+                        <div>
+                            <span class="player-name">${player.name}</span>
+                            <span class="player-mode">Current: ${player.gamemode}</span>
+                        </div>
+                        <div class="gamemode-buttons">
+                            ${gamemodes.map(mode => `
+                                <button class="btn btn-gamemode ${mode} ${player.gamemode === mode ? 'active' : ''}"
+                                        onclick="setGamemode('${player.name}', '${mode}')"
+                                        ${player.gamemode === mode ? 'disabled' : ''}>
+                                    ${mode.charAt(0).toUpperCase() + mode.slice(1)}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Players refresh error:', error);
+                document.getElementById('playersSection').innerHTML =
+                    `<p style="color: #f44336;">Error loading players: ${error.message}</p>`;
+            }
+        }
+
+        async function setGamemode(player, gamemode) {
+            try {
+                const response = await fetch(`/api/player/${player}/gamemode/${gamemode}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(`${player} set to ${gamemode} mode`, 'success');
+                    refreshPlayers();
+                } else {
+                    showMessage(data.detail || 'Failed to set game mode', 'error');
+                }
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Initial players load
+        refreshPlayers();
+
+        // Refresh players every 15 seconds
+        setInterval(refreshPlayers, 15000);
 
         // Drag and drop functionality
         const dropZone = document.getElementById('dropZone');

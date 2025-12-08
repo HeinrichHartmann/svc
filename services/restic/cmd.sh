@@ -9,14 +9,17 @@ set -x
 
 while true;
 do
+    # Trigger backup first
+    just backup-raw
+
+    # Wait 5 minutes before prune (allows inspection/interrupt)
+    echo "Backup complete. Waiting 5 minutes before prune..."
+    sleep 300
+
     # Perform Maintenance
-    restic --cache-dir=/cache --host pve --repo b2:hh-restic-b2 forget --keep-daily 7 --keep-weekly 4 --keep-monthly 60 --prune
+    just prune-raw
 
-    # Trigger an immediate backup now
-    echo "[$(date)] Running backup"
-    restic --cache-dir=/cache --host pve --repo b2:hh-restic-b2 -v backup /share/attic
-
-    # Sleep until next bakup interval
+    # Sleep until next backup interval
     interval="tomorrow 03:00:00"
     sleep_time="$(expr $(date -d "$interval" +%s) - $(date +%s))"
     echo Sleeping until $interval: $sleep_time seconds

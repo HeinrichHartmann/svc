@@ -1,0 +1,130 @@
+# Restic backup to Backblaze B2
+
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+repo := "b2:hh-restic-b2"
+host := "pve"
+image := "restic-job:latest"
+backup_path := "/share/attic"
+cache_dir := "/cache"
+marker_host := "/share/hhartmann/attic/.restic/marker"
+marker_container := "/share/attic/.restic/marker"
+
+# List available recipes
+default:
+    @just --list
+
+# Build container from flake
+build:
+    nix build .#container
+    docker load < result
+
+# Run backup (via docker, for host)
+backup:
+    echo "backup $(date -Iseconds)" > {{marker_host}}
+    @echo "[$(date)] Running backup of {{backup_path}}"
+    @just _restic backup {{backup_path}} -v
+
+# Run backup (direct restic, for container)
+backup-raw:
+    echo "backup $(date -Iseconds)" > {{marker_container}}
+    @echo "[$(date)] Running backup of {{backup_path}}"
+    @just _restic-raw backup {{backup_path}} -v
+
+# Dry-run backup
+backup-dry:
+    @just _restic backup {{backup_path}} --dry-run -v
+
+# List recent snapshots
+snapshots:
+    @just _restic snapshots --latest 10
+
+# Show repo stats
+stats:
+    @just _restic stats
+
+# Remove stale locks
+unlock:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    docker run --rm \
+      -e B2_ACCOUNT_ID="$B2_ACCOUNT_ID" \
+      -e B2_ACCOUNT_KEY="$B2_ACCOUNT_KEY" \
+      -e RESTIC_PASSWORD="$RESTIC_PASSWORD" \
+      --tmpfs /tmp \
+      {{image}} \
+      restic --repo {{repo}} unlock --remove-all
+
+# Prune with retention policy (dry-run)
+prune-dry:
+    @just _restic forget --keep-daily 100 --keep-weekly 100 --keep-yearly 1000 --dry-run
+
+# Prune with retention policy
+prune:
+    @just _restic forget --keep-daily 100 --keep-weekly 100 --keep-yearly 1000 --prune
+
+# Prune (direct restic, for container)
+prune-raw:
+    @just _restic-raw forget --keep-daily 100 --keep-weekly 100 --keep-yearly 1000 --prune
+
+# Mount repo for browsing (native, needs local restic)
+mount:
+    mkdir -p /svc/mnt/restic/{{repo}}
+    restic --repo {{repo}} mount /svc/mnt/restic/{{repo}}
+
+# Validate last backup
+validate:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Validating latest backup..."
+    mkdir -p /tmp/restic-test
+    source ~/box/secrets/restic.key
+    docker run --rm \
+      -e B2_ACCOUNT_ID="$B2_ACCOUNT_ID" \
+      -e B2_ACCOUNT_KEY="$B2_ACCOUNT_KEY" \
+      -e RESTIC_PASSWORD="$RESTIC_PASSWORD" \
+      -v /tmp/restic-test:/restore \
+      --tmpfs /tmp \
+      {{image}} \
+      restic --repo {{repo}} restore latest --target /restore --include .restic/marker
+    echo "=== Local marker ==="
+    cat {{marker_host}}
+    echo "=== Restored marker ==="
+    cat /tmp/restic-test{{marker_container}}
+    diff -q {{marker_host}} /tmp/restic-test{{marker_container}} && echo "=== VALIDATION PASSED ===" || echo "=== VALIDATION FAILED ==="
+    docker run --rm -v /tmp/restic-test:/restore {{image}} rm -rf /restore/share
+
+# Tofu plan
+tofu-plan:
+    tofu plan
+
+# Tofu apply
+tofu-apply:
+    tofu apply
+
+# B2 bucket info
+b2status:
+    @echo "=== B2 Bucket Info ==="
+    b2v4 bucket get hh-restic-b2
+
+# B2 bucket size (slow)
+b2size:
+    b2v4 bucket get hh-restic-b2 --show-size
+
+# Helper: run restic in container
+_restic *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    docker run --rm \
+      -e B2_ACCOUNT_ID="$B2_ACCOUNT_ID" \
+      -e B2_ACCOUNT_KEY="$B2_ACCOUNT_KEY" \
+      -e RESTIC_PASSWORD="$RESTIC_PASSWORD" \
+      -v /share/hhartmann:/share:ro \
+      -v /share/hhartmann/var/restic:{{cache_dir}} \
+      --tmpfs /tmp \
+      {{image}} \
+      restic --cache-dir={{cache_dir}} --repo {{repo}} --host {{host}} {{args}}
+
+# Helper: run restic directly (for container)
+_restic-raw *args:
+    restic --cache-dir={{cache_dir}} --repo {{repo}} --host {{host}} {{args}}

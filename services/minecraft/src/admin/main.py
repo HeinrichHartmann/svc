@@ -150,6 +150,71 @@ def get_online_players() -> tuple[List[str], Optional[str]]:
         return ([], f"Error: {str(e)}")
 
 
+def get_player_gamemode(player: str) -> Optional[str]:
+    """Get the game mode of a player. Returns None if unable to determine."""
+    try:
+        container = docker_client.containers.get(MINECRAFT_CONTAINER)
+        if container.status != "running":
+            return None
+
+        # Use data get to query the player's game mode
+        result = container.exec_run(f"rcon-cli 'data get entity {player} playerGameType'", demux=False)
+        output = result.output.decode('utf-8').strip()
+
+        # Parse output like "Player has the following entity data: 0"
+        # 0=survival, 1=creative, 2=adventure, 3=spectator
+        if "has the following entity data:" in output:
+            mode_num = output.split(":")[-1].strip()
+            mode_map = {"0": "survival", "1": "creative", "2": "adventure", "3": "spectator"}
+            return mode_map.get(mode_num, "unknown")
+
+        return None
+    except Exception:
+        return None
+
+
+def get_players_with_gamemodes() -> tuple[List[Dict[str, Any]], Optional[str]]:
+    """Get list of online players with their game modes."""
+    players, error = get_online_players()
+    if error:
+        return ([], error)
+
+    players_data = []
+    for player in players:
+        gamemode = get_player_gamemode(player)
+        players_data.append({
+            "name": player,
+            "gamemode": gamemode or "unknown"
+        })
+
+    return (players_data, None)
+
+
+def set_player_gamemode(player: str, gamemode: str) -> tuple[bool, str]:
+    """Set a player's game mode. Returns (success, message)."""
+    valid_modes = ["survival", "creative", "adventure", "spectator"]
+    if gamemode not in valid_modes:
+        return (False, f"Invalid game mode. Must be one of: {', '.join(valid_modes)}")
+
+    try:
+        container = docker_client.containers.get(MINECRAFT_CONTAINER)
+        if container.status != "running":
+            return (False, "Server not running")
+
+        result = container.exec_run(f"rcon-cli 'gamemode {gamemode} {player}'", demux=False)
+        output = result.output.decode('utf-8').strip()
+
+        # Success looks like "Set Player's game mode to Survival Mode"
+        if "game mode to" in output.lower() or "Set" in output:
+            return (True, output)
+
+        return (False, output or "Unknown error")
+    except docker.errors.NotFound:
+        return (False, "Container not found")
+    except Exception as e:
+        return (False, str(e))
+
+
 def switch_world(world_name: str) -> bool:
     """Switch to a different world and restart the server."""
     world_source = WORLDS_DIR / world_name
@@ -266,6 +331,30 @@ async def api_logs(lines: int = 100):
     return {
         "logs": get_container_logs(lines),
         "lines": lines
+    }
+
+
+@app.get("/api/players")
+async def api_players():
+    """Get online players with their game modes."""
+    players, error = get_players_with_gamemodes()
+    return {
+        "players": players,
+        "error": error
+    }
+
+
+@app.post("/api/player/{player}/gamemode/{gamemode}")
+async def api_set_gamemode(player: str, gamemode: str):
+    """Set a player's game mode."""
+    success, message = set_player_gamemode(player, gamemode)
+    if not success:
+        raise HTTPException(status_code=400, detail=message)
+    return {
+        "success": True,
+        "player": player,
+        "gamemode": gamemode,
+        "message": message
     }
 
 

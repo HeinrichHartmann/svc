@@ -1,11 +1,14 @@
-version: "3.9"
-
 services:
   restic:
-    image: docker.heinrichhartmann.net/restic
-    env_file: auth.sh.crypt
+    image: restic-job:latest
+    environment:
+      - B2_ACCOUNT_ID
+      - B2_ACCOUNT_KEY
+      - RESTIC_PASSWORD
     volumes:
-      - ./cmd.sh:/cmd.sh
-      - /share/hhartmann:/share
+      - /share/hhartmann:/share:ro
+      - /share/hhartmann/attic/.restic:/share/attic/.restic
       - /share/hhartmann/var/restic:/cache
-    command: bash /cmd.sh
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
