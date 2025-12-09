@@ -316,3 +316,105 @@ resource "migadu_alias" "signals_heinrich_aliases" {
   local_part   = each.key
   destinations = ["heinrich@${local.sc_domain}"]
 }
+
+# Program Committee mailing list mailbox
+resource "migadu_mailbox" "signals_pc" {
+  name        = "Program Committee"
+  domain_name = local.sc_domain
+  local_part  = "pc"
+  password    = local.sc_mailbox_password
+  may_send    = false
+  may_receive = true
+}
+
+# Forwardings for pc@ mailbox (workaround until provider supports it)
+# NOTE: Recipients must confirm forwarding via email link
+locals {
+  pc_forwardings = [
+    "alexander@heusingfeld.de",
+    "sven.johann@innoq.com",
+    "sylvain@rootly.com",
+    "alejandro.saucedo@zalando.de",
+    "mirko.novakovic@dash0.com",
+    "martin@chronosphere.io",
+    "juraci@ollygarden.com",
+    "marcel.sim@dash0.com",
+    "dennis.pfaendler@coralogix.com",
+    "matthias.loibl@polarsignals.com",
+    "hannes@checklyhq.com",
+    "rob.comeau@funnelfires.com",
+    "jeremypa.colin@gmail.com",
+  ]
+}
+
+resource "null_resource" "pc_forwardings" {
+  for_each = toset(local.pc_forwardings)
+
+  triggers = {
+    mailbox = migadu_mailbox.signals_pc.id
+    address = each.value
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      curl -s -X POST -u "$MIGADU_USERNAME:$MIGADU_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d '{"address":"${each.value}"}' \
+        "https://api.migadu.com/v1/domains/${local.sc_domain}/mailboxes/pc/forwardings" || true
+    EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<-EOT
+      curl -s -X DELETE -u "$MIGADU_USERNAME:$MIGADU_TOKEN" \
+        "https://api.migadu.com/v1/domains/signalsconf.io/mailboxes/pc/forwardings/${self.triggers.address}" || true
+    EOT
+  }
+}
+
+# ========================================
+# Test mailbox for mailing list testing
+# ========================================
+
+resource "migadu_mailbox" "signals_test" {
+  name        = "Test Mailing List"
+  domain_name = local.sc_domain
+  local_part  = "test"
+  password    = local.sc_mailbox_password
+
+  may_send    = false
+  may_receive = true
+}
+
+locals {
+  test_forwardings = [
+    "derhein@gmail.com",
+  ]
+}
+
+resource "null_resource" "test_forwardings" {
+  for_each = toset(local.test_forwardings)
+
+  triggers = {
+    mailbox = migadu_mailbox.signals_test.id
+    address = each.value
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      curl -s -X POST -u "$MIGADU_USERNAME:$MIGADU_TOKEN" \
+        -H "Content-Type: application/json" \
+        -d '{"address":"${each.value}"}' \
+        "https://api.migadu.com/v1/domains/${local.sc_domain}/mailboxes/test/forwardings" || true
+    EOT
+  }
+
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<-EOT
+      curl -s -X DELETE -u "$MIGADU_USERNAME:$MIGADU_TOKEN" \
+        "https://api.migadu.com/v1/domains/signalsconf.io/mailboxes/test/forwardings/${self.triggers.address}" || true
+    EOT
+  }
+}
