@@ -15,7 +15,7 @@ services:
       EULA: "TRUE"
 
       # Server configuration
-      VERSION: "1.21.9"
+      VERSION: "1.21.11"
       TYPE: "VANILLA"
 
       # Game settings

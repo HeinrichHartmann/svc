@@ -23,6 +23,9 @@ locals {
 
     "hhe15.ts.heinrichhartmann.net" = "100.121.201.109",
     "*.hhe15.ts.heinrichhartmann.net" = "100.121.201.109",
+
+    "hhair25.ts.heinrichhartmann.net" = "100.107.249.31",
+    "*.hhair25.ts.heinrichhartmann.net" = "100.107.249.31",
   }
 }
 
