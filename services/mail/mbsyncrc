@@ -1,0 +1,55 @@
+# Test configuration - sync only "test" label from hhartmann.1729@gmail.com
+# Gmail labels appear as folders in IMAP
+
+IMAPAccount gmail-hhartmann
+Host imap.gmail.com
+User hhartmann.1729@gmail.com
+PassCmd "cat /secrets/gmail_hhartmann.key"
+Port 993
+TLSType IMAPS
+AuthMechs LOGIN
+
+IMAPStore gmail-hhartmann-remote
+Account gmail-hhartmann
+
+MaildirStore gmail-hhartmann-local
+Path /data/Maildir/hhartmann.1729/
+Inbox /data/Maildir/hhartmann.1729/Inbox
+SubFolders Verbatim
+
+Channel gmail-hhartmann-test
+Far :gmail-hhartmann-remote:
+Near :gmail-hhartmann-local:
+Patterns "test" "[Gmail]/Sent Mail" "[Gmail]/All Mail"
+Create Near
+Expunge Near
+Sync Pull
+ExpireUnread yes
+
+#
+# derhein@gmail.com
+#
+IMAPAccount gmail-derhein
+Host imap.gmail.com
+User derhein@gmail.com
+PassCmd "cat /secrets/gmail_derhein.key"
+Port 993
+TLSType IMAPS
+AuthMechs LOGIN
+
+IMAPStore gmail-derhein-remote
+Account gmail-derhein
+
+MaildirStore gmail-derhein-local
+Path /data/Maildir/derhein/
+Inbox /data/Maildir/derhein/Inbox
+SubFolders Verbatim
+
+Channel gmail-derhein-sent
+Far :gmail-derhein-remote:
+Near :gmail-derhein-local:
+Patterns "[Gmail]/Sent Mail"
+Create Near
+Expunge Near
+Sync Pull
+ExpireUnread yes

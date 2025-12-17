@@ -15,7 +15,7 @@ services:
       - /share/hhartmann/var/gogs:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gogs.rule=HostRegexp(`gogs.{domain:.*}`)"
-      - "traefik.http.routers.gogs.entrypoints=https"
+      - "traefik.http.routers.gogs.rule=HostRegexp(`^gogs\\.`)"
+      - "traefik.http.routers.gogs.entrypoints=websecure"
       - "traefik.http.routers.gogs.tls=true"
       - "traefik.http.services.gogs.loadbalancer.server.port=3000"

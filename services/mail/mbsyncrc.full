@@ -1,0 +1,58 @@
+# mbsync configuration for syncing Gmail accounts to Maildir
+# Syncs to /data/Maildir inside container (mounted to /share/hhartmann/var/mbsync/Maildir)
+
+#
+# hhartmann.1729@gmail.com
+#
+IMAPAccount gmail-hhartmann
+Host imap.gmail.com
+User hhartmann.1729@gmail.com
+PassCmd "cat /secrets/gmail_hhartmann.key"
+Port 993
+SSLType IMAPS
+AuthMechs LOGIN
+
+IMAPStore gmail-hhartmann-remote
+Account gmail-hhartmann
+
+MaildirStore gmail-hhartmann-local
+Path /data/Maildir/hhartmann.1729
+Inbox /data/Maildir/hhartmann.1729/Inbox
+SubFolders Verbatim
+
+Channel gmail-hhartmann
+Far :gmail-hhartmann-remote:
+Near :gmail-hhartmann-local:
+Patterns "[Gmail]/All Mail" "[Gmail]/Sent Mail"
+Create Near
+Expunge Near
+Sync Pull
+ExpireUnread yes
+
+#
+# derhein@gmail.com
+#
+IMAPAccount gmail-derhein
+Host imap.gmail.com
+User derhein@gmail.com
+PassCmd "cat /secrets/gmail_derhein.key"
+Port 993
+SSLType IMAPS
+AuthMechs LOGIN
+
+IMAPStore gmail-derhein-remote
+Account gmail-derhein
+
+MaildirStore gmail-derhein-local
+Path /data/Maildir/derhein
+Inbox /data/Maildir/derhein/Inbox
+SubFolders Verbatim
+
+Channel gmail-derhein
+Far :gmail-derhein-remote:
+Near :gmail-derhein-local:
+Patterns "[Gmail]/All Mail" "[Gmail]/Sent Mail"
+Create Near
+Expunge Near
+Sync Pull
+ExpireUnread yes
