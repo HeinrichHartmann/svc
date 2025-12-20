@@ -10,15 +10,19 @@
         pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
       in
       {
-        devShells.default = pkgs.mkShell { packages = [
-          pkgs.coreutils
-          pkgs.util-linux # umount
-          pkgs.gnumake
-          pkgs.bindfs
-          pkgs.git
-          pkgs.opentofu
-          pkgs.awscli2
-        ]; };
+        devShells.default = pkgs.mkShell {
+          packages = with pkgs; [
+            coreutils
+            util-linux # umount
+            gnumake
+            bindfs
+            git
+            opentofu
+            awscli2
+            ruby
+            restic
+          ];
+        };
       }
     );
 }

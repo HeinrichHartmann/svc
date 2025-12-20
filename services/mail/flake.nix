@@ -78,6 +78,9 @@
           buildInputs = with pkgs; [
             isync
             ruby
+            procps  # provides pgrep
+            gnumake
+            restic  # for backup script
           ];
         };
       }

@@ -1,11 +1,10 @@
-.PHONY: build sync start stop
+include /svc/lib/include.mk
+
+.PHONY: build sync start stop job-run
 
 build:
 	nix build .#dockerImage
 	docker load < result
-
-sync:
-	docker compose run --rm mbsync
 
 start:
 	@echo "mbsync is a one-shot service. Use 'make sync' to run it."
@@ -16,3 +15,6 @@ stop:
 clean:
 	docker compose down
 	rm -f result
+
+job-run:
+	./scripts/sync.rb

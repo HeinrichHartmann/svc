@@ -1,0 +1,9 @@
+# Terraform/OpenTofu files
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate.*
+
+# Environment
+.direnv/

@@ -112,3 +112,6 @@ services-list:
 
 services-list-available:
 	./svc.sh list-available
+
+test:
+	cd ./test; make test

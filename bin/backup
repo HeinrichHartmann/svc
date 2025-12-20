@@ -1,0 +1,202 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'net/http'
+require 'uri'
+require 'time'
+require 'fileutils'
+
+# Shared backup script using restic
+# Usage: backup <command> [volumes...]
+#
+# Examples:
+#   backup backup /vol1 /vol2       - Backup volumes to repository
+#   backup list                      - List snapshots
+#   backup restore <snapshot-id>     - Restore snapshot
+#   backup stats                     - Show statistics
+
+# Configuration from environment
+BACKUP_REPO = ENV['BACKUP_REPO']
+B2_KEYID = ENV['B2_KEYID']
+B2_KEY = ENV['B2_KEY']
+RESTIC_PASSWORD = ENV['RESTIC_PASSWORD']
+MONITOR_URL = ENV['MONITOR_URL']
+
+# Helper to log with timestamp
+def log(msg)
+  timestamp = Time.now.strftime('%Y-%m-%d %H:%M:%S')
+  puts "[#{timestamp}] #{msg}"
+end
+
+# Send heartbeat to monitoring service with retry
+def send_heartbeat
+  return unless MONITOR_URL && !MONITOR_URL.empty?
+  attempt = 0
+  begin
+    attempt += 1
+    uri = URI.parse(MONITOR_URL)
+    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https',
+                    open_timeout: 5, read_timeout: 5) do |http|
+      response = http.get(uri.request_uri)
+      response.value  # Raises error if not 2xx
+      log "✓ Heartbeat sent"
+    end
+  rescue => e
+    if attempt < 3
+      sleep 1
+      retry
+    else
+      log "⚠ Heartbeat failed: #{e.message}"
+    end
+  end
+end
+
+def show_help
+  puts "Usage: backup <command> [volumes...]"
+  puts ""
+  puts "Commands:"
+  puts "  backup <vol1> [vol2...]  - Backup volumes to repository"
+  puts "  list                     - List backup snapshots"
+  puts "  stats                    - Show backup statistics"
+  puts "  restore <id>             - Restore a snapshot by ID"
+  puts "  init                     - Initialize repository (first time)"
+  puts "  check                    - Check repository integrity"
+  puts "  forget                   - Prune old snapshots"
+  puts "  ls <snapshot>            - List files in snapshot"
+  puts "  find <pattern>           - Find files matching pattern"
+  puts "  diff <id1> <id2>         - Compare two snapshots"
+  puts ""
+  puts "Environment variables:"
+  puts "  BACKUP_REPO         - S3 restic repository URL (required)"
+  puts "  B2_KEYID            - B2 application key ID (required for S3)"
+  puts "  B2_KEY              - B2 application key (required for S3)"
+  puts "  RESTIC_PASSWORD     - Restic repository password (required)"
+  puts "  MONITOR_URL         - Checkly heartbeat URL (optional)"
+end
+
+# Get command
+command = ARGV.shift
+
+if !command || command == '-h' || command == '--help'
+  show_help
+  exit(command ? 0 : 1)
+end
+
+# Validate required environment variables
+unless BACKUP_REPO
+  log "ERROR: BACKUP_REPO environment variable not set"
+  exit 1
+end
+
+unless RESTIC_PASSWORD
+  log "ERROR: RESTIC_PASSWORD environment variable not set"
+  exit 1
+end
+
+# For S3 backend, require B2 credentials
+if BACKUP_REPO.start_with?('s3:')
+  unless B2_KEYID && B2_KEY
+    log "ERROR: B2_KEYID and B2_KEY environment variables required for S3 backend"
+    exit 1
+  end
+  # Export AWS-compatible env vars for restic S3 backend
+  ENV['AWS_ACCESS_KEY_ID'] = B2_KEYID
+  ENV['AWS_SECRET_ACCESS_KEY'] = B2_KEY
+end
+
+# Build restic command
+restic_args = ['-r', BACKUP_REPO]
+
+case command
+when 'backup'
+  # Remaining args are volumes
+  volumes = ARGV.dup
+
+  if volumes.empty?
+    log "ERROR: No volumes specified for backup"
+    exit 1
+  end
+
+  # Validate volumes exist
+  volumes.each do |volume|
+    unless File.exist?(volume)
+      log "ERROR: Volume does not exist: #{volume}"
+      exit 1
+    end
+  end
+
+  log "=== Backup started ==="
+  log "Volumes: #{volumes.join(', ')}"
+  log "Repository: #{BACKUP_REPO}"
+
+  restic_args << 'backup'
+  volumes.each { |v| restic_args << v }
+
+  restic_args << '--verbose'
+
+when 'list', 'snapshots'
+  restic_args << 'snapshots'
+
+when 'stats'
+  restic_args << 'stats'
+
+when 'restore'
+  # Pass through all args to restic restore
+  restic_args << 'restore'
+  restic_args.concat(ARGV)
+
+when 'init'
+  restic_args << 'init'
+
+when 'check'
+  restic_args << 'check'
+
+when 'forget', 'prune'
+  restic_args << 'forget'
+  restic_args << '--keep-daily' << '7'
+  restic_args << '--keep-weekly' << '4'
+  restic_args << '--keep-monthly' << '6'
+  restic_args << '--prune'
+
+when 'ls'
+  restic_args << 'ls'
+  restic_args.concat(ARGV)
+
+when 'find'
+  pattern = ARGV.shift
+  unless pattern
+    log "ERROR: Search pattern required for find"
+    exit 1
+  end
+  restic_args << 'find' << pattern
+
+when 'diff'
+  snap1 = ARGV.shift
+  snap2 = ARGV.shift
+  unless snap1 && snap2
+    log "ERROR: Two snapshot IDs required for diff"
+    exit 1
+  end
+  restic_args << 'diff' << snap1 << snap2
+
+else
+  log "ERROR: Unknown command: #{command}"
+  show_help
+  exit 1
+end
+
+# Execute restic
+log "Running: restic #{restic_args.join(' ')}" if command == 'backup'
+
+success = system('restic', *restic_args)
+exit_code = $?.exitstatus
+
+# Send heartbeat on successful backup
+if command == 'backup' && success
+  log "✓ Backup completed successfully"
+  send_heartbeat
+elsif command == 'backup'
+  log "ERROR: Backup failed (exit #{exit_code})"
+end
+
+exit exit_code

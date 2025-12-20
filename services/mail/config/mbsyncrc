@@ -1,5 +1,5 @@
 # mbsync configuration for syncing Gmail accounts to Maildir
-# Syncs to /data/Maildir inside container (mounted to /share/hhartmann/var/mbsync/Maildir)
+# Syncs to volumes/Maildir/ (symlinked to /share/hhartmann/var/mbsync/Maildir)
 
 #
 # hhartmann.1729@gmail.com
@@ -7,7 +7,7 @@
 IMAPAccount gmail-hhartmann
 Host imap.gmail.com
 User hhartmann.1729@gmail.com
-PassCmd "cat /secrets/gmail_hhartmann.key"
+PassCmd "cat secrets/gmail_hhartmann.key"
 Port 993
 SSLType IMAPS
 AuthMechs LOGIN
@@ -16,8 +16,8 @@ IMAPStore gmail-hhartmann-remote
 Account gmail-hhartmann
 
 MaildirStore gmail-hhartmann-local
-Path /data/Maildir/hhartmann.1729
-Inbox /data/Maildir/hhartmann.1729/Inbox
+Path ../volumes/Maildir/hhartmann.1729/
+Inbox ../volumes/Maildir/hhartmann.1729/Inbox
 SubFolders Verbatim
 
 Channel gmail-hhartmann
@@ -35,7 +35,7 @@ ExpireUnread yes
 IMAPAccount gmail-derhein
 Host imap.gmail.com
 User derhein@gmail.com
-PassCmd "cat /secrets/gmail_derhein.key"
+PassCmd "cat secrets/gmail_derhein.key"
 Port 993
 SSLType IMAPS
 AuthMechs LOGIN
@@ -44,8 +44,8 @@ IMAPStore gmail-derhein-remote
 Account gmail-derhein
 
 MaildirStore gmail-derhein-local
-Path /data/Maildir/derhein
-Inbox /data/Maildir/derhein/Inbox
+Path ../volumes/Maildir/derhein/
+Inbox ../volumes/Maildir/derhein/Inbox
 SubFolders Verbatim
 
 Channel gmail-derhein
