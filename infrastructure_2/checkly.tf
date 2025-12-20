@@ -104,7 +104,7 @@ resource "checkly_heartbeat" "mail_backup" {
     grace_unit  = "hours"
   }
 
-  tags = ["backup", "mail", "mbsync"]
+  tags = ["homelab", "backup", "mail", "mbsync"]
 
   alert_settings {
     escalation_type = "RUN_BASED"
@@ -143,7 +143,7 @@ resource "checkly_heartbeat" "prism_backup" {
     grace_unit  = "hours"
   }
 
-  tags = ["backup", "restic", "prism", "photoprism", "media"]
+  tags = ["homelab", "backup", "restic", "prism", "photoprism", "media"]
 
   alert_settings {
     escalation_type = "RUN_BASED"
@@ -182,7 +182,7 @@ resource "checkly_heartbeat" "paperless_backup" {
     grace_unit  = "hours"
   }
 
-  tags = ["backup", "restic", "paperless", "media"]
+  tags = ["homelab", "backup", "restic", "paperless", "media"]
 
   alert_settings {
     escalation_type = "RUN_BASED"
