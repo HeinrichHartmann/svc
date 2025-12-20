@@ -8,10 +8,6 @@ terraform {
       source  = "metio/migadu"
       version = "~> 2025.10"
     }
-    checkly = {
-      source  = "checkly/checkly"
-      version = "~> 1.0"
-    }
   }
 }
 
