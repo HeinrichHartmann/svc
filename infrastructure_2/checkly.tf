@@ -1,7 +1,41 @@
-# Checkly heartbeat monitors for backup jobs
-# These monitors expect a heartbeat ping within 24 hours (+2 hours grace period)
+# Checkly monitoring configuration
+# Dynamically discovers services from /svc/services.enabled/*/config.yaml
 
-# Email alert channel for backup failures
+# Read and parse all service configs
+locals {
+  services_dir = "/svc/services.enabled"
+
+  # Find all config.yaml files
+  config_files = fileset(local.services_dir, "*/config.yaml")
+
+  # Parse configs and extract monitoring settings
+  service_configs = {
+    for f in local.config_files :
+    split("/", f)[0] => yamldecode(file("${local.services_dir}/${f}"))
+  }
+
+  # Filter services with monitoring enabled
+  monitored_services = {
+    for name, config in local.service_configs :
+    name => config.monitoring
+    if try(config.monitoring.enabled, false)
+  }
+}
+
+# Private location for home network monitoring
+resource "checkly_private_location" "home_network" {
+  name      = "Home Network"
+  slug_name = "home-network"
+  icon      = "home"
+}
+
+output "private_location_key" {
+  description = "Private location key for agent setup"
+  value       = checkly_private_location.home_network.keys
+  sensitive   = true
+}
+
+# Email alert channel for all checks
 resource "checkly_alert_channel" "backup_email" {
   email {
     address = "hhartmann.1729+checkly@gmail.com"
@@ -10,6 +44,53 @@ resource "checkly_alert_channel" "backup_email" {
   send_failure  = true
   send_degraded = false
 }
+
+# Dynamic URL checks from service configs
+resource "checkly_check" "services" {
+  for_each = local.monitored_services
+
+  name      = each.value.url
+  type      = "API"
+  activated = true
+  frequency = try(each.value.frequency, 5)
+
+  locations = []
+  private_locations = [checkly_private_location.home_network.slug_name]
+
+  tags = ["homelab", each.key, "url-check"]
+
+  request {
+    method = "GET"
+    url    = each.value.url
+
+    assertion {
+      source     = "STATUS_CODE"
+      comparison = "EQUALS"
+      target     = tostring(try(each.value.expected_status, 200))
+    }
+  }
+
+  alert_settings {
+    escalation_type = "RUN_BASED"
+
+    run_based_escalation {
+      failed_run_threshold = 1
+    }
+
+    reminders {
+      amount   = 1
+      interval = 5
+    }
+  }
+
+  alert_channel_subscription {
+    channel_id = checkly_alert_channel.backup_email.id
+    activated  = true
+  }
+}
+
+# Checkly heartbeat monitors for backup jobs
+# These monitors expect a heartbeat ping within 24 hours (+2 hours grace period)
 
 # Heartbeat check for Mail backup
 resource "checkly_heartbeat" "mail_backup" {
@@ -126,39 +207,4 @@ output "paperless_backup_heartbeat_url" {
   description = "Ping this URL after successful Paperless backup"
   value       = "https://ping.checklyhq.com/${one(checkly_heartbeat.paperless_backup.heartbeat).ping_token}"
   sensitive   = true
-}
-
-# Status Page Services
-resource "checkly_status_page_service" "website" {
-  name = "Website"
-}
-
-resource "checkly_status_page_service" "backups" {
-  name = "Backups"
-}
-
-# Status Page
-resource "checkly_status_page" "homelab" {
-  name          = "Homelab Status"
-  url           = "homelab-status"
-  default_theme = "AUTO"
-
-  card {
-    name = "Website Services"
-    service_attachment {
-      service_id = checkly_status_page_service.website.id
-    }
-  }
-
-  card {
-    name = "Backup Jobs"
-    service_attachment {
-      service_id = checkly_status_page_service.backups.id
-    }
-  }
-}
-
-output "status_page_url" {
-  description = "Status page URL"
-  value       = "https://homelab-status.checklyhq.com"
 }
