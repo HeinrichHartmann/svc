@@ -1,6 +1,6 @@
 include /svc/lib/include.mk
 
-.PHONY: build sync start stop job-run
+.PHONY: build sync start stop job-run backup
 
 build:
 	nix build .#dockerImage
@@ -18,3 +18,6 @@ clean:
 
 job-run:
 	./scripts/sync.rb
+
+backup:
+	/svc/bin/backup backup /share/hhartmann/var/mbsync/Maildir

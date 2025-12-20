@@ -43,6 +43,11 @@ metrics:
 		> //tmp/metrics.prom
 	mv /tmp/metrics.prom /share/hhartmann/var/prom/textfile_exporter/metrics.prom
 
+backup:
+	echo "Running backup for enabled services..."
+	find -L ./services.enabled -type f -name "Makefile" \
+	  -exec sh -c 'if grep -q "backup:" "{}"; then (cd $$(dirname "{}") && direnv exec . make backup); fi' \;
+
 start:
 	# We need to start these first
 	cd services/traefik && make start

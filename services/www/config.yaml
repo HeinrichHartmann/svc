@@ -1,0 +1,5 @@
+# Service configuration for www.heinrichhartmann.net
+monitoring:
+  enabled: true
+  url: https://www.heinrichhartmann.net
+  frequency: 5  # Check every 5 minutes

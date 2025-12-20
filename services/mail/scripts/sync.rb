@@ -16,7 +16,6 @@ LOCK_FILE = ENV.fetch('LOCK_FILE', '/tmp/mbsync.lock')
 MBSYNC_CONFIG = ENV.fetch('MBSYNC_CONFIG', 'config/mbsyncrc')
 MONITOR_URL = ENV['MONITOR_URL']
 SYNC_TIMEOUT = ENV.fetch('SYNC_TIMEOUT', '3600').to_i
-BACKUP_SCRIPT = ENV.fetch('BACKUP_SCRIPT', 'scripts/backup.sh')
 
 # Helper to log with timestamp
 def log(msg)
@@ -44,24 +43,6 @@ def send_heartbeat
     else
       log "⚠ Heartbeat failed: #{e.message}"
     end
-  end
-end
-
-# Run backup script synchronously
-def run_backup
-  log "Running backup..."
-  unless File.exist?(BACKUP_SCRIPT)
-    log "ERROR: Backup script not found: #{BACKUP_SCRIPT}"
-    return false
-  end
-
-  backup_result = system("#{BACKUP_SCRIPT} backup")
-  if backup_result
-    log "✓ Backup completed"
-    true
-  else
-    log "ERROR: Backup failed (exit #{$?.exitstatus})"
-    false
   end
 end
 
@@ -159,16 +140,11 @@ begin
   end
   log "✓ Snapshot created"
 
-  # === STEP 4: Run backup ===
-  unless run_backup
-    exit(1)
-  end
-
-  # === STEP 5: Cleanup pre-sync snapshot ===
+  # === STEP 4: Cleanup pre-sync snapshot ===
   log "Cleaning up pre-sync snapshot: #{snapshot_pre}"
   system("sudo #{ZFS_CMD} destroy #{ZFS_DATASET}@#{snapshot_pre}")
 
-  # === STEP 6: Send success heartbeat ===
+  # === STEP 5: Send success heartbeat ===
   log "✓ Sync complete"
   send_heartbeat
 

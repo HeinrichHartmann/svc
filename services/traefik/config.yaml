@@ -1,0 +1,6 @@
+# Traefik service configuration
+monitoring:
+  enabled: true
+  url: https://traefik.heinrichhartmann.net
+  frequency: 5
+  expected_status: 405  # Traefik dashboard returns 405 for GET requests

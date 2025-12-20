@@ -127,3 +127,38 @@ output "paperless_backup_heartbeat_url" {
   value       = "https://ping.checklyhq.com/${one(checkly_heartbeat.paperless_backup.heartbeat).ping_token}"
   sensitive   = true
 }
+
+# Status Page Services
+resource "checkly_status_page_service" "website" {
+  name = "Website"
+}
+
+resource "checkly_status_page_service" "backups" {
+  name = "Backups"
+}
+
+# Status Page
+resource "checkly_status_page" "homelab" {
+  name          = "Homelab Status"
+  url           = "homelab-status"
+  default_theme = "AUTO"
+
+  card {
+    name = "Website Services"
+    service_attachment {
+      service_id = checkly_status_page_service.website.id
+    }
+  }
+
+  card {
+    name = "Backup Jobs"
+    service_attachment {
+      service_id = checkly_status_page_service.backups.id
+    }
+  }
+}
+
+output "status_page_url" {
+  description = "Status page URL"
+  value       = "https://homelab-status.checklyhq.com"
+}

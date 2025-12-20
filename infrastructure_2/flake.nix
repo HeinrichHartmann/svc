@@ -17,6 +17,7 @@
           packages = with pkgs; [
             opentofu
             gnumake
+            ruby
           ];
         };
       }

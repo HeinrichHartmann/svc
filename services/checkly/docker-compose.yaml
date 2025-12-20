@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  checkly-agent:
+    image: ghcr.io/checkly/agent:latest
+    container_name: checkly-agent
+    restart: unless-stopped
+    environment:
+      - API_KEY=${CHECKLY_API_KEY}
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G

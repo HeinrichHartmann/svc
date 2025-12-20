@@ -5,6 +5,7 @@ require 'net/http'
 require 'uri'
 require 'time'
 require 'fileutils'
+require 'digest'
 
 # Shared backup script using restic
 # Usage: backup <command> [volumes...]
@@ -185,11 +186,40 @@ else
   exit 1
 end
 
+# Acquire lock for backup operations to prevent concurrent runs
+lockfile = nil
+if command == 'backup'
+  # Create lockfile path based on repository hash
+  repo_hash = Digest::MD5.hexdigest(BACKUP_REPO)
+  lockfile_path = "/tmp/backup-#{repo_hash}.lock"
+
+  begin
+    lockfile = File.open(lockfile_path, File::CREAT | File::RDWR)
+    # Try to acquire exclusive lock (non-blocking)
+    unless lockfile.flock(File::LOCK_EX | File::LOCK_NB)
+      log "ERROR: Another backup is already running for this repository"
+      log "Lockfile: #{lockfile_path}"
+      exit 2
+    end
+    log "✓ Lock acquired: #{lockfile_path}"
+  rescue => e
+    log "ERROR: Failed to acquire lock: #{e.message}"
+    exit 2
+  end
+end
+
 # Execute restic
 log "Running: restic #{restic_args.join(' ')}" if command == 'backup'
 
 success = system('restic', *restic_args)
 exit_code = $?.exitstatus
+
+# Release lock
+if lockfile
+  lockfile.flock(File::LOCK_UN)
+  lockfile.close
+  log "✓ Lock released"
+end
 
 # Send heartbeat on successful backup
 if command == 'backup' && success

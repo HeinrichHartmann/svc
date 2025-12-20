@@ -1,0 +1,9 @@
+# Service configuration template
+# Copy this file and customize for your service
+
+# Monitoring configuration (optional)
+# Uncomment to enable Checkly monitoring
+#monitoring:
+#  enabled: true
+#  url: https://%HOST%.heinrichhartmann.net
+#  frequency: 10  # Check interval in minutes (default: 10)

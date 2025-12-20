@@ -22,8 +22,8 @@ services:
     image: ghcr.io/paperless-ngx/paperless-ngx:latest
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.paperless.rule=HostRegexp(`paperless.{domain:.*}`)"
-      - "traefik.http.routers.paperless.entrypoints=https"
+      - "traefik.http.routers.paperless.rule=HostRegexp(`^paperless`)"
+      - "traefik.http.routers.paperless.entrypoints=websecure"
       - "traefik.http.routers.paperless.tls=true"
     depends_on:
       - db
@@ -70,5 +70,5 @@ services:
       - "--chromium-allow-list=file:///tmp/.*"
 
   tika:
-    image: ghcr.io/paperless-ngx/tika:latest
+    image: docker.io/apache/tika:latest
     restart: unless-stopped
