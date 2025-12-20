@@ -74,12 +74,11 @@ resource "checkly_check" "services" {
     escalation_type = "RUN_BASED"
 
     run_based_escalation {
-      failed_run_threshold = 1
+      failed_run_threshold = 5
     }
 
     reminders {
-      amount   = 1
-      interval = 5
+      amount   = 0
     }
   }
 
